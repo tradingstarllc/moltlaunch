@@ -1,0 +1,20 @@
+{
+  "name": "moltlaunch",
+  "version": "0.1.0",
+  "description": "AI Agent Launchpad on Solana",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:app\" \"npm run dev:backend\"",
+    "dev:app": "cd app && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "npm run build:app && npm run build:backend",
+    "build:app": "cd app && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "test": "anchor test"
+  },
+  "devDependencies": {
+    "@coral-xyz/anchor": "^0.30.0",
+    "@types/node": "^20.0.0",
+    "concurrently": "^8.0.0",
+    "typescript": "^5.0.0"
+  }
+}
