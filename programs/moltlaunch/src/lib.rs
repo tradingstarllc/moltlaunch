@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer, MintTo};
 
 // NOTE: Program ID needs redeployment after SAP identity instructions were added
-declare_id!("Mo1tLnchXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+declare_id!("6AZSAhq4iJTwCfGEVssoa1p3GnBqGkbcQ1iDdP1U1pSb");
 
 #[program]
 pub mod moltlaunch {
@@ -73,20 +73,30 @@ pub mod moltlaunch {
 
     /// Buy tokens from bonding curve
     pub fn buy_tokens(ctx: Context<BuyTokens>, sol_amount: u64) -> Result<()> {
-        let launch = &mut ctx.accounts.launch;
-        require!(launch.status == LaunchStatus::Active, ErrorCode::LaunchNotActive);
+        // Read fields before mutable borrow
+        let status = ctx.accounts.launch.status;
+        let start_time = ctx.accounts.launch.start_time;
+        let end_time = ctx.accounts.launch.end_time;
+        let curve_type = ctx.accounts.launch.bonding_curve_type;
+        let current_raise = ctx.accounts.launch.current_raise;
+        let target_raise = ctx.accounts.launch.target_raise;
+        let token_supply = ctx.accounts.launch.token_supply;
+        let agent_key = ctx.accounts.launch.agent;
+        let bump = ctx.accounts.launch.bump;
+        
+        require!(status == LaunchStatus::Active, ErrorCode::LaunchNotActive);
         
         let clock = Clock::get()?;
-        require!(clock.unix_timestamp >= launch.start_time, ErrorCode::LaunchNotStarted);
-        require!(clock.unix_timestamp <= launch.end_time, ErrorCode::LaunchEnded);
+        require!(clock.unix_timestamp >= start_time, ErrorCode::LaunchNotStarted);
+        require!(clock.unix_timestamp <= end_time, ErrorCode::LaunchEnded);
 
         // Calculate tokens based on bonding curve
         let token_amount = calculate_tokens_out(
-            launch.bonding_curve_type,
-            launch.current_raise,
+            curve_type,
+            current_raise,
             sol_amount,
-            launch.target_raise,
-            launch.token_supply,
+            target_raise,
+            token_supply,
         )?;
 
         // Transfer SOL to vault
@@ -102,8 +112,8 @@ pub mod moltlaunch {
         // Mint tokens to buyer
         let seeds = &[
             b"launch",
-            launch.agent.as_ref(),
-            &[launch.bump],
+            agent_key.as_ref(),
+            &[bump],
         ];
         let signer = &[&seeds[..]];
 
@@ -117,13 +127,13 @@ pub mod moltlaunch {
         token::mint_to(cpi_ctx, token_amount)?;
 
         // Update launch state
+        let launch = &mut ctx.accounts.launch;
         launch.current_raise += sol_amount;
         launch.tokens_sold += token_amount;
 
         // Check if graduated
-        if launch.current_raise >= launch.target_raise {
+        if launch.current_raise >= target_raise {
             launch.status = LaunchStatus::Graduated;
-            // TODO: Create Raydium pool
         }
 
         Ok(())
