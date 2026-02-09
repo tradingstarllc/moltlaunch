@@ -44,16 +44,42 @@ Level 5:    DePIN device (io.net, Helium)  → $500/mo (registered device)
 | Repo | Description | Status |
 |------|-------------|--------|
 | **[moltlaunch-site](https://github.com/tradingstarllc/moltlaunch-site)** | API server, website, STARK prover, identity system | ✅ **Live** — 90+ endpoints |
-| **[moltlaunch-sdk](https://github.com/tradingstarllc/moltlaunch-sdk)** | `@moltlaunch/sdk` — npm package for agent integration | ✅ **v2.3.0** |
+| **[moltlaunch-sdk](https://github.com/tradingstarllc/moltlaunch-sdk)** | `@moltlaunch/sdk` — npm package for agent integration | ✅ **v2.4.0** |
 | **[proof-of-agent](https://github.com/tradingstarllc/proof-of-agent)** | `@moltlaunch/proof-of-agent` — standalone verifier | ✅ **v1.0.0** |
+| **[solana-agent-protocol](https://github.com/tradingstarllc/solana-agent-protocol)** | SAP — application-layer standards for agent trust | 📋 **3 proposals** |
 | **[agent-casino PR](https://github.com/Romulus-Sol/agent-casino/pull/2)** | Cross-project integration — verification-gated tables | ✅ **Merged** |
+| **[GOVERNANCE.md](GOVERNANCE.md)** | 4-phase decentralization roadmap + Squads multisig | ✅ **Phase 2** |
+| **[FAQ](https://github.com/tradingstarllc/moltlaunch-site/blob/main/docs/FAQ.md)** | Frequently asked questions | ✅ **Live** |
+
+---
+
+## On-Chain Program
+
+**14 Anchor Instructions** deployed on Solana devnet:
+
+```
+Launchpad:     initialize, register_agent, verify_agent, create_launch,
+               buy_tokens, finalize_launch
+
+SAP Identity:  register_identity, attest_verification, bind_depin_device,
+               flag_sybil, update_trust_level
+
+Lifecycle:     rotate_identity, delegate_authority, revoke_delegation
+```
+
+| Component | Details |
+|-----------|---------|
+| **AgentIdentity PDA** | 366 bytes — identity, trust level, DePIN binding, delegation, rotation history |
+| **Squads Multisig** | [`3gCjhVMKazL2VKQgqQ8vP93vLzPTos1e7XLm1jr7X9t5`](https://explorer.solana.com/address/3gCjhVMKazL2VKQgqQ8vP93vLzPTos1e7XLm1jr7X9t5?cluster=devnet) — 2-of-3 attestation authority |
+| **Governance** | [GOVERNANCE.md](GOVERNANCE.md) — 4-phase decentralization plan |
+| **Network** | Solana Devnet |
 
 ---
 
 ## Quick Start
 
 ```bash
-npm install @moltlaunch/sdk@2.3.0
+npm install @moltlaunch/sdk@2.4.0
 ```
 
 ```typescript
@@ -115,8 +141,17 @@ await ml.registerDePINDevice({
 
 ### 🧠 On-Chain AI Verification
 - POA-Scorer deployed to Solana devnet via Cauldron/Frostbite RISC-V VM
+- 14 Anchor instructions (launchpad + SAP identity + lifecycle)
+- AgentIdentity PDA: 366 bytes (identity, trust, DePIN, delegation, rotation)
+- Identity rotation & delegation authority support
 - 12-dimension behavioral scoring
 - Execution trace system with Merkle commitments
+
+### 🏛️ Governance & Multisig
+- Squads multisig deployed on devnet ([`3gCjhV...`](https://explorer.solana.com/address/3gCjhVMKazL2VKQgqQ8vP93vLzPTos1e7XLm1jr7X9t5?cluster=devnet))
+- 2-of-3 threshold — no single entity can unilaterally attest
+- [4-phase decentralization roadmap](GOVERNANCE.md): Single Authority → Multisig → Validator Network → DAO
+- Partner seats open for SATI, SlotScribe, Agent Casino, and community
 
 ### ⛓️ Solana Integrations (6 Real)
 - **Cauldron**: On-chain AI inference
