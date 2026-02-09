@@ -166,6 +166,11 @@ pub mod moltlaunch {
         identity.registered_at = Clock::get()?.unix_timestamp;
         identity.expires_at = Clock::get()?.unix_timestamp + (30 * 24 * 60 * 60); // 30 days
         identity.attested_at = None;
+        identity.previous_identity_hash = None;
+        identity.rotated_at = None;
+        identity.delegate = None;
+        identity.delegation_scope = None;
+        identity.delegation_expires = None;
         identity.bump = ctx.bumps.identity;
 
         emit!(IdentityRegistered {
@@ -254,6 +259,88 @@ pub mod moltlaunch {
             owner: identity.owner,
             old_level,
             new_level,
+        });
+
+        Ok(())
+    }
+
+    // ============ Identity Rotation & Delegation Instructions ============
+
+    /// Rotate identity to a new hardware fingerprint (preserves score, drops trust)
+    pub fn rotate_identity(
+        ctx: Context<RotateIdentity>,
+        new_identity_hash: [u8; 32],
+        migration_proof: [u8; 32],
+    ) -> Result<()> {
+        let identity = &mut ctx.accounts.identity;
+
+        // Store previous hash for audit trail
+        identity.previous_identity_hash = Some(identity.identity_hash);
+        identity.identity_hash = new_identity_hash;
+        identity.rotated_at = Some(Clock::get()?.unix_timestamp);
+
+        // Trust level drops on rotation (must re-attest with new hardware)
+        if identity.trust_level > 2 {
+            identity.trust_level = 2;
+        }
+
+        // Score preserved (behavioral history carries over)
+        // Consistency proof resets implicitly (new hardware = new baseline)
+        // Clear evidence since it's from old hardware
+        identity.last_evidence = [0u8; 32];
+
+        emit!(IdentityRotated {
+            owner: identity.owner,
+            old_hash: identity.previous_identity_hash.unwrap(),
+            new_hash: new_identity_hash,
+            migration_proof,
+        });
+
+        Ok(())
+    }
+
+    /// Delegate authority over this identity to another keypair
+    pub fn delegate_authority(
+        ctx: Context<DelegateAuthority>,
+        delegate: Pubkey,
+        scope: DelegationScope,
+        expires_at: i64,
+    ) -> Result<()> {
+        let identity = &mut ctx.accounts.identity;
+
+        // Validate expiry is in the future
+        let now = Clock::get()?.unix_timestamp;
+        require!(expires_at > now, ErrorCode::DelegationExpired);
+
+        identity.delegate = Some(delegate);
+        identity.delegation_scope = Some(scope as u8);
+        identity.delegation_expires = Some(expires_at);
+
+        emit!(DelegationCreated {
+            owner: identity.owner,
+            delegate,
+            scope: scope as u8,
+            expires_at,
+        });
+
+        Ok(())
+    }
+
+    /// Revoke an existing delegation
+    pub fn revoke_delegation(
+        ctx: Context<RevokeDelegation>,
+    ) -> Result<()> {
+        let identity = &mut ctx.accounts.identity;
+
+        let old_delegate = identity.delegate;
+
+        identity.delegate = None;
+        identity.delegation_scope = None;
+        identity.delegation_expires = None;
+
+        emit!(DelegationRevoked {
+            owner: identity.owner,
+            delegate: old_delegate.unwrap_or_default(),
         });
 
         Ok(())
@@ -465,6 +552,45 @@ pub struct UpdateTrustLevel<'info> {
     pub owner: Signer<'info>,
 }
 
+#[derive(Accounts)]
+pub struct RotateIdentity<'info> {
+    #[account(
+        mut,
+        seeds = [b"sap-identity", owner.key().as_ref()],
+        bump = identity.bump,
+        has_one = owner
+    )]
+    pub identity: Account<'info, AgentIdentity>,
+
+    pub owner: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct DelegateAuthority<'info> {
+    #[account(
+        mut,
+        seeds = [b"sap-identity", owner.key().as_ref()],
+        bump = identity.bump,
+        has_one = owner
+    )]
+    pub identity: Account<'info, AgentIdentity>,
+
+    pub owner: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct RevokeDelegation<'info> {
+    #[account(
+        mut,
+        seeds = [b"sap-identity", owner.key().as_ref()],
+        bump = identity.bump,
+        has_one = owner
+    )]
+    pub identity: Account<'info, AgentIdentity>,
+
+    pub owner: Signer<'info>,
+}
+
 // ============ State ============
 
 #[account]
@@ -535,11 +661,18 @@ pub struct AgentIdentity {
     pub expires_at: i64,                  // 8
     pub attested_at: Option<i64>,         // 1 + 8
     pub bump: u8,                         // 1
+    // ---- Identity rotation & delegation fields ----
+    pub previous_identity_hash: Option<[u8; 32]>,  // 1 + 32 = 33
+    pub rotated_at: Option<i64>,                    // 1 + 8 = 9
+    pub delegate: Option<Pubkey>,                   // 1 + 32 = 33
+    pub delegation_scope: Option<u8>,               // 1 + 1 = 2  (0=Full, 1=AttestOnly, 2=ReadOnly, 3=SignTransactions)
+    pub delegation_expires: Option<i64>,            // 1 + 8 = 9
 }
 
 impl AgentIdentity {
-    pub const SIZE: usize = 32 + 32 + 1 + 1 + 36 + 33 + 21 + 1 + 33 + 32 + 32 + 8 + 8 + 9 + 1;
-    // = 280 bytes
+    pub const SIZE: usize = 32 + 32 + 1 + 1 + 36 + 33 + 21 + 1 + 33 + 32 + 32 + 8 + 8 + 9 + 1
+        + 33 + 9 + 33 + 2 + 9;
+    // = 280 + 86 = 366 bytes
 }
 
 // ============ Types ============
@@ -567,6 +700,14 @@ pub enum BondingCurveType {
     Linear,
     Exponential,
     Sigmoid,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
+pub enum DelegationScope {
+    Full,              // 0 - Can do everything owner can
+    AttestOnly,        // 1 - Can only submit traces and update trust
+    ReadOnly,          // 2 - Can prove identity but not modify
+    SignTransactions,  // 3 - Can sign on behalf (hot wallet)
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
@@ -600,6 +741,12 @@ pub enum ErrorCode {
     SybilFlagged,
     #[msg("DePIN device PDA does not exist on-chain")]
     DePINDeviceNotFound,
+    #[msg("Delegation has expired")]
+    DelegationExpired,
+    #[msg("Unauthorized delegate")]
+    UnauthorizedDelegate,
+    #[msg("Insufficient delegation scope")]
+    InsufficientScope,
 }
 
 // ============ SAP Events ============
@@ -636,6 +783,28 @@ pub struct TrustLevelUpdated {
     pub owner: Pubkey,
     pub old_level: u8,
     pub new_level: u8,
+}
+
+#[event]
+pub struct IdentityRotated {
+    pub owner: Pubkey,
+    pub old_hash: [u8; 32],
+    pub new_hash: [u8; 32],
+    pub migration_proof: [u8; 32],
+}
+
+#[event]
+pub struct DelegationCreated {
+    pub owner: Pubkey,
+    pub delegate: Pubkey,
+    pub scope: u8,
+    pub expires_at: i64,
+}
+
+#[event]
+pub struct DelegationRevoked {
+    pub owner: Pubkey,
+    pub delegate: Pubkey,
 }
 
 // ============ Helpers ============
