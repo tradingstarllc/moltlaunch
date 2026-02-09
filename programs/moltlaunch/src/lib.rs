@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer, MintTo};
 
+// NOTE: Program ID needs redeployment after SAP identity instructions were added
 declare_id!("Mo1tLnchXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
 #[program]
@@ -139,6 +140,124 @@ pub mod moltlaunch {
         launch.status = LaunchStatus::Finalized;
         Ok(())
     }
+
+    // ============ SAP Identity Instructions ============
+
+    /// Register a hardware-anchored identity PDA for an agent
+    pub fn register_identity(
+        ctx: Context<RegisterIdentity>,
+        identity_hash: [u8; 32],
+        trust_level: u8,
+        attestation_method: String,
+    ) -> Result<()> {
+        require!(trust_level <= 5, ErrorCode::InvalidTrustLevel);
+        let identity = &mut ctx.accounts.identity;
+        identity.owner = ctx.accounts.owner.key();
+        identity.identity_hash = identity_hash;
+        identity.trust_level = trust_level;
+        identity.attestation_method = attestation_method;
+        identity.score = 0;
+        identity.depin_device = None;
+        identity.depin_provider = None;
+        identity.sybil_flagged = false;
+        identity.sybil_match = None;
+        identity.last_attestation = [0u8; 32];
+        identity.last_evidence = [0u8; 32];
+        identity.registered_at = Clock::get()?.unix_timestamp;
+        identity.expires_at = Clock::get()?.unix_timestamp + (30 * 24 * 60 * 60); // 30 days
+        identity.attested_at = None;
+        identity.bump = ctx.bumps.identity;
+
+        emit!(IdentityRegistered {
+            owner: identity.owner,
+            identity_hash,
+            trust_level,
+        });
+
+        Ok(())
+    }
+
+    /// Record a PoA verification score on-chain (authority only)
+    pub fn attest_verification(
+        ctx: Context<AttestVerification>,
+        score: u8,
+        _tier: String,
+        attestation_hash: [u8; 32],
+    ) -> Result<()> {
+        let identity = &mut ctx.accounts.identity;
+        identity.score = score;
+        identity.last_attestation = attestation_hash;
+        identity.attested_at = Some(Clock::get()?.unix_timestamp);
+
+        emit!(VerificationAttested {
+            owner: identity.owner,
+            score,
+            attestation_hash,
+        });
+
+        Ok(())
+    }
+
+    /// Link identity to a DePIN device PDA
+    pub fn bind_depin_device(
+        ctx: Context<BindDePINDevice>,
+        depin_provider: String,
+        _device_id: String,
+    ) -> Result<()> {
+        require!(ctx.accounts.device_pda.lamports() > 0, ErrorCode::DePINDeviceNotFound);
+        let identity = &mut ctx.accounts.identity;
+        identity.depin_device = Some(ctx.accounts.device_pda.key());
+        identity.depin_provider = Some(depin_provider);
+        identity.trust_level = 5; // DePIN = highest trust
+
+        emit!(DePINBound {
+            owner: identity.owner,
+            device_pda: ctx.accounts.device_pda.key(),
+        });
+
+        Ok(())
+    }
+
+    /// Flag an identity as a Sybil (authority only)
+    pub fn flag_sybil(
+        ctx: Context<FlagSybil>,
+        reason: String,
+        matching_identity: Pubkey,
+    ) -> Result<()> {
+        let identity = &mut ctx.accounts.identity;
+        identity.sybil_flagged = true;
+        identity.sybil_match = Some(matching_identity);
+        identity.trust_level = 0; // Reset trust
+
+        emit!(SybilFlagged {
+            owner: identity.owner,
+            matching_identity,
+            reason,
+        });
+
+        Ok(())
+    }
+
+    /// Update trust level after new attestation (owner only)
+    pub fn update_trust_level(
+        ctx: Context<UpdateTrustLevel>,
+        new_level: u8,
+        evidence_hash: [u8; 32],
+    ) -> Result<()> {
+        require!(new_level <= 5, ErrorCode::InvalidTrustLevel);
+        let identity = &mut ctx.accounts.identity;
+        let old_level = identity.trust_level;
+        identity.trust_level = new_level;
+        identity.last_evidence = evidence_hash;
+
+        emit!(TrustLevelUpdated {
+            owner: identity.owner,
+            old_level,
+            new_level,
+        });
+
+        Ok(())
+    }
 }
 
 // ============ Accounts ============
@@ -261,6 +380,91 @@ pub struct FinalizeLaunch<'info> {
     pub authority: Signer<'info>,
 }
 
+// ============ SAP Identity Accounts ============
+
+#[derive(Accounts)]
+pub struct RegisterIdentity<'info> {
+    #[account(
+        init,
+        payer = owner,
+        space = 8 + AgentIdentity::SIZE,
+        seeds = [b"sap-identity", owner.key().as_ref()],
+        bump
+    )]
+    pub identity: Account<'info, AgentIdentity>,
+
+    #[account(mut)]
+    pub owner: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct AttestVerification<'info> {
+    #[account(
+        mut,
+        seeds = [b"sap-identity", identity.owner.as_ref()],
+        bump = identity.bump
+    )]
+    pub identity: Account<'info, AgentIdentity>,
+
+    #[account(
+        seeds = [b"launchpad"],
+        bump = launchpad.bump,
+        has_one = authority
+    )]
+    pub launchpad: Account<'info, Launchpad>,
+
+    pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct BindDePINDevice<'info> {
+    #[account(
+        mut,
+        seeds = [b"sap-identity", owner.key().as_ref()],
+        bump = identity.bump,
+        has_one = owner
+    )]
+    pub identity: Account<'info, AgentIdentity>,
+
+    /// CHECK: DePIN device PDA - we verify it exists on-chain
+    pub device_pda: UncheckedAccount<'info>,
+
+    pub owner: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct FlagSybil<'info> {
+    #[account(
+        mut,
+        seeds = [b"sap-identity", identity.owner.as_ref()],
+        bump = identity.bump
+    )]
+    pub identity: Account<'info, AgentIdentity>,
+
+    #[account(
+        seeds = [b"launchpad"],
+        bump = launchpad.bump,
+        has_one = authority
+    )]
+    pub launchpad: Account<'info, Launchpad>,
+
+    pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateTrustLevel<'info> {
+    #[account(
+        mut,
+        seeds = [b"sap-identity", owner.key().as_ref()],
+        bump = identity.bump,
+        has_one = owner
+    )]
+    pub identity: Account<'info, AgentIdentity>,
+
+    pub owner: Signer<'info>,
+}
+
 // ============ State ============
 
 #[account]
@@ -314,6 +518,30 @@ impl Launch {
     pub const SIZE: usize = 32 + 32 + 64 + 16 + 8 + 8 + 8 + 8 + 1 + 8 + 8 + 1 + 1;
 }
 
+#[account]
+pub struct AgentIdentity {
+    pub owner: Pubkey,                    // 32
+    pub identity_hash: [u8; 32],          // 32 - hardware fingerprint hash
+    pub trust_level: u8,                  // 1  - 0-5
+    pub score: u8,                        // 1  - PoA score 0-100
+    pub attestation_method: String,       // 4 + 32 max
+    pub depin_device: Option<Pubkey>,     // 1 + 32
+    pub depin_provider: Option<String>,   // 1 + 4 + 16 max
+    pub sybil_flagged: bool,              // 1
+    pub sybil_match: Option<Pubkey>,      // 1 + 32
+    pub last_attestation: [u8; 32],       // 32
+    pub last_evidence: [u8; 32],          // 32
+    pub registered_at: i64,               // 8
+    pub expires_at: i64,                  // 8
+    pub attested_at: Option<i64>,         // 1 + 8
+    pub bump: u8,                         // 1
+}
+
+impl AgentIdentity {
+    pub const SIZE: usize = 32 + 32 + 1 + 1 + 36 + 33 + 21 + 1 + 33 + 32 + 32 + 8 + 8 + 9 + 1;
+    // = 280 bytes
+}
+
 // ============ Types ============
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -364,6 +592,50 @@ pub enum ErrorCode {
     LaunchEnded,
     #[msg("Launch has not graduated")]
     NotGraduated,
+    #[msg("Invalid trust level (must be 0-5)")]
+    InvalidTrustLevel,
+    #[msg("Identity has expired")]
+    IdentityExpired,
+    #[msg("Identity is flagged as Sybil")]
+    SybilFlagged,
+    #[msg("DePIN device PDA does not exist on-chain")]
+    DePINDeviceNotFound,
+}
+
+// ============ SAP Events ============
+
+#[event]
+pub struct IdentityRegistered {
+    pub owner: Pubkey,
+    pub identity_hash: [u8; 32],
+    pub trust_level: u8,
+}
+
+#[event]
+pub struct VerificationAttested {
+    pub owner: Pubkey,
+    pub score: u8,
+    pub attestation_hash: [u8; 32],
+}
+
+#[event]
+pub struct DePINBound {
+    pub owner: Pubkey,
+    pub device_pda: Pubkey,
+}
+
+#[event]
+pub struct SybilFlagged {
+    pub owner: Pubkey,
+    pub matching_identity: Pubkey,
+    pub reason: String,
+}
+
+#[event]
+pub struct TrustLevelUpdated {
+    pub owner: Pubkey,
+    pub old_level: u8,
+    pub new_level: u8,
 }
 
 // ============ Helpers ============
