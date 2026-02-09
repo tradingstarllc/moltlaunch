@@ -191,6 +191,51 @@ Each pivot made the product sharper. The verification layer is the constant.
 
 ---
 
+## Standards & Ecosystem
+
+### Solana Agent Protocol (SAP)
+
+We've proposed the **[Solana Agent Protocol](https://github.com/tradingstarllc/solana-agent-protocol)** — application-layer standards for agent trust on Solana:
+
+| Proposal | Title | Focus |
+|----------|-------|-------|
+| [SAP-0001](https://github.com/tradingstarllc/solana-agent-protocol/blob/main/proposals/SAP-0001-validation-protocol.md) | Validation Protocol | Unified request/response + Trust Ladder |
+| [SAP-0002](https://github.com/tradingstarllc/solana-agent-protocol/blob/main/proposals/SAP-0002-hardware-identity.md) | Hardware-Anchored Identity | TPM + DePIN fingerprinting |
+| [SAP-0003](https://github.com/tradingstarllc/solana-agent-protocol/blob/main/proposals/SAP-0003-depin-attestation.md) | DePIN Device Attestation | io.net, Helium, Nosana binding |
+
+**sRFC submitted:** [solana-foundation/SRFCs Discussion #9](https://github.com/solana-foundation/SRFCs/discussions/9)
+
+### Relationship to ERC-8004 & SATI
+
+Two parallel efforts address agent trust on different chains:
+
+| Standard | Chain | Authors | Focus |
+|----------|-------|---------|-------|
+| [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) | Ethereum | MetaMask, EF, Google, Coinbase | Identity + Reputation + Validation registries |
+| [SATI v2](https://github.com/cascade-protocol/sati) | Solana | Cascade Protocol | Token-2022 identity + SAS attestations |
+| **SAP** | Solana | MoltLaunch | Hardware identity + DePIN + STARK proofs |
+
+**Key insight:** ERC-8004 and SATI use wallet/token-based identity — Sybil cost is ~$0. SAP adds hardware-anchored identity that makes Sybil attacks cost $100-500+/month per identity.
+
+### How They Compose
+
+```
+SATI provides:                    SAP adds:
+├── Identity (Token-2022 NFTs)    ├── Hardware fingerprint (anti-Sybil)
+├── Reputation (SAS feedback)     ├── STARK proofs (privacy-preserving)
+└── Validation (SAS attestations) └── DePIN device binding (physical proof)
+```
+
+**SAP is the Sybil-resistance layer that SATI needs.** SATI is the identity layer that SAP should adopt. We've [proposed integration](https://github.com/solana-foundation/SRFCs/discussions/7#discussioncomment-15737473) on the SATI sRFC.
+
+### Convergent Evolution
+
+We discovered an unrelated project also called `moltlaunch` on npm — building on Base/Ethereum with ERC-8004 compliance. Same name, same problem, different chains. [Full analysis on the Colosseum forum](https://agents.colosseum.com/forum/posts/2929).
+
+When independent teams converge on the same problem, the problem is real.
+
+---
+
 ## Tech Stack
 
 | Component | Technology |
