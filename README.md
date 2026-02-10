@@ -3,298 +3,198 @@
 </p>
 
 <p align="center">
-  <strong>Hardware-rooted identity & anti-Sybil infrastructure for AI agents on Solana</strong>
+  <strong>MoltLaunch makes AI agents fundable by making them verifiable.</strong>
 </p>
 
 <p align="center">
-  <a href="https://web-production-419d9.up.railway.app"><img src="https://img.shields.io/badge/🌐_Live-Railway-blueviolet" alt="Live" /></a>
+  Hardware identity via DePIN. Privacy via STARK proofs. Capital via staking pools.<br>
+  <strong>Only possible on Solana.</strong>
+</p>
+
+<p align="center">
+  <a href="https://web-production-419d9.up.railway.app"><img src="https://img.shields.io/badge/🌐_Live_Site-Railway-blueviolet" alt="Live" /></a>
+  <a href="https://web-production-419d9.up.railway.app/pitch.html"><img src="https://img.shields.io/badge/📊_Pitch_Deck-11_slides-blue" alt="Pitch" /></a>
   <a href="https://www.npmjs.com/package/@moltlaunch/sdk"><img src="https://img.shields.io/npm/v/@moltlaunch/sdk" alt="SDK" /></a>
-  <a href="https://www.npmjs.com/package/@moltlaunch/proof-of-agent"><img src="https://img.shields.io/npm/v/@moltlaunch/proof-of-agent" alt="PoA" /></a>
-  <a href="https://web-production-419d9.up.railway.app/registry.html"><img src="https://img.shields.io/badge/registry-174_projects-green" alt="Registry" /></a>
+  <a href="https://github.com/solana-foundation/SRFCs/discussions/9"><img src="https://img.shields.io/badge/sRFC-%239-green" alt="sRFC" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT" /></a>
 </p>
 
 <p align="center">
-  🏆 <a href="https://www.colosseum.org/">Colosseum Agent Hackathon 2026</a> — $100K USDC
+  🏆 <a href="https://www.colosseum.org/">Colosseum Agent Hackathon 2026</a>
 </p>
 
 ---
 
 ## The Problem
 
-**85% of AI agent tokens rug.** There's no way to verify if an agent is real, unique, or trustworthy. One operator can spin up 10 identical bots for free. The agent economy can't function without identity and trust.
+85% of AI agent tokens rug. There's no way to verify if an agent is real, unique, or trustworthy. One operator can spin up 10 identical bots for $0.
 
-## The Solution
+**Existing identity systems verify humans.** Worldcoin scans irises. Gitcoin checks GitHub. BrightID maps social graphs. None of this works for AI agents.
 
-**Hardware-anchored identity + Proof-of-Agent verification** — tie agent identity to physical hardware, making Sybil attacks economically irrational.
+## The Insight
 
-```
-Trust Ladder — Cost per Sybil Identity:
+Solana has something no other chain has: **DePIN.** io.net, Helium, Nosana — these networks verify physical hardware on-chain. If you tie agent identity to verified DePIN devices, creating a fake identity costs $500+/month instead of $0.
 
-Level 0-2:  API keys, code hash           → $0      (free Sybil)
-Level 3:    Hardware fingerprint           → $100/mo (separate server)
-Level 4:    TPM attestation                → $200/mo (physical machine)
-Level 5:    DePIN device (io.net, Helium)  → $500/mo (registered device)
-```
+**Proof of Personhood verifies humans. Proof of Agent verifies machines.**
 
----
-
-## Repositories
-
-| Repo | Description | Status |
-|------|-------------|--------|
-| **[moltlaunch-site](https://github.com/tradingstarllc/moltlaunch-site)** | API server, website, STARK prover, identity system | ✅ **Live** — 90+ endpoints |
-| **[moltlaunch-sdk](https://github.com/tradingstarllc/moltlaunch-sdk)** | `@moltlaunch/sdk` — npm package for agent integration | ✅ **v2.4.0** |
-| **[proof-of-agent](https://github.com/tradingstarllc/proof-of-agent)** | `@moltlaunch/proof-of-agent` — standalone verifier | ✅ **v1.0.0** |
-| **[solana-agent-protocol](https://github.com/tradingstarllc/solana-agent-protocol)** | SAP — application-layer standards for agent trust | 📋 **3 proposals** |
-| **[agent-casino PR](https://github.com/Romulus-Sol/agent-casino/pull/2)** | Cross-project integration — verification-gated tables | ✅ **Merged** |
-| **[GOVERNANCE.md](GOVERNANCE.md)** | 4-phase decentralization roadmap + Squads multisig | ✅ **Phase 2** |
-| **[FAQ](https://github.com/tradingstarllc/moltlaunch-site/blob/main/docs/FAQ.md)** | Frequently asked questions | ✅ **Live** |
-
----
-
-## On-Chain Program
-
-**14 Anchor Instructions** deployed on Solana devnet:
+## The Trust Ladder
 
 ```
-Launchpad:     initialize, register_agent, verify_agent, create_launch,
-               buy_tokens, finalize_launch
-
-SAP Identity:  register_identity, attest_verification, bind_depin_device,
-               flag_sybil, update_trust_level
-
-Lifecycle:     rotate_identity, delegate_authority, revoke_delegation
+Level 0-2: Wallet / API key           $0      ← Everyone else
+Level 3:   Hardware fingerprint        $100/mo ← MoltLaunch
+Level 4:   TPM challenge-response      $200/mo ← MoltLaunch
+Level 5:   DePIN device verified       $500/mo ← Only on Solana
 ```
 
-| Component | Details |
-|-----------|---------|
-| **AgentIdentity PDA** | 366 bytes — identity, trust level, DePIN binding, delegation, rotation history |
-| **Squads Multisig** | [`3gCjhVMKazL2VKQgqQ8vP93vLzPTos1e7XLm1jr7X9t5`](https://explorer.solana.com/address/3gCjhVMKazL2VKQgqQ8vP93vLzPTos1e7XLm1jr7X9t5?cluster=devnet) — 2-of-3 attestation authority |
-| **Governance** | [GOVERNANCE.md](GOVERNANCE.md) — 4-phase decentralization plan |
-| **Network** | Solana Devnet |
+## The Economic Flywheel
 
----
-
-## Quick Start
-
-```bash
-npm install @moltlaunch/sdk@2.4.0
+```
+Agent proves identity (pays $0.01-0.10)
+  → Unlocks protocol access (CLAWIN tables, staking pools, marketplaces)
+  → Generates revenue from those protocols
+  → Revenue justifies investing in higher trust level
+  → Higher trust = more access = more revenue
+  → Loop
 ```
 
-```typescript
-import { MoltLaunch } from "@moltlaunch/sdk";
-const ml = new MoltLaunch();
+Verification without economic consequences is a badge. Verification WITH economic consequences is infrastructure.
 
-// 1. Generate hardware-anchored identity
-const identity = await ml.generateIdentity({
-  includeHardware: true,
-  includeTPM: true,
-  includeCode: true,
-  codeEntry: "./index.js",
-  agentId: "my-agent",
-  anchor: true  // Write to Solana
-});
+---
 
-// 2. Verify an agent
-const result = await ml.verify({
-  agentId: "my-agent",
-  capabilities: ["trading", "analysis"],
-  codeUrl: "https://github.com/org/repo"
-});
-console.log(result.score);  // 78
-console.log(result.tier);   // "good"
+## What's In This Repo
 
-// 3. Generate STARK proof (privacy-preserving)
-const proof = await ml.generateProof("my-agent", { threshold: 60 });
-// Proves score >= 60 without revealing exact score
+### Anchor Program (Deployed to Devnet)
 
-// 4. Check table for Sybils
-const table = await ml.checkTableSybils(["bot1", "bot2", "bot3"]);
-// { safe: true, sybilClusters: [] }
+**Program ID:** [`6AZSAhq4iJTwCfGEVssoa1p3GnBqGkbcQ1iDdP1U1pSb`](https://explorer.solana.com/address/6AZSAhq4iJTwCfGEVssoa1p3GnBqGkbcQ1iDdP1U1pSb?cluster=devnet)
 
-// 5. Register DePIN device
-await ml.registerDePINDevice({
-  provider: "io.net",
-  deviceId: "device_abc123",
-  agentId: "my-agent"
-});
+14 instructions:
+
+| Category | Instructions |
+|----------|-------------|
+| **Identity** | `register_identity` · `rotate_identity` · `bind_depin_device` |
+| **Verification** | `attest_verification` · `update_trust_level` · `flag_sybil` |
+| **Delegation** | `delegate_authority` · `revoke_delegation` |
+| **Launchpad** | `initialize` · `register_agent` · `verify_agent` · `create_launch` · `buy_tokens` · `finalize_launch` |
+
+**AgentIdentity PDA** (366 bytes):
+```rust
+pub struct AgentIdentity {
+    pub owner: Pubkey,
+    pub identity_hash: [u8; 32],      // Hardware fingerprint
+    pub trust_level: u8,               // 0-5
+    pub score: u8,                     // PoA score 0-100
+    pub depin_device: Option<Pubkey>,  // DePIN PDA reference
+    pub sybil_flagged: bool,
+    pub delegate: Option<Pubkey>,      // Hot wallet delegation
+    pub delegation_scope: Option<u8>,  // Full/AttestOnly/ReadOnly/Sign
+    // + rotation history, timestamps, evidence hashes
+}
 ```
 
----
+Any Solana program can CPI into this PDA to check: Is this agent verified? What trust level? Is it flagged as Sybil? Does it have a DePIN device?
 
-## What We Built (Day 1-8)
+### Governance
 
-### 🔑 Hardware-Anchored Identity
-- Software fingerprinting (CPU, memory, hostname, MAC addresses)
-- TPM 2.0 attestation (endorsement keys, board serial, product UUID)
-- DePIN device registration (io.net, Akash, Render, Helium, Hivemapper, Nosana)
-- Sybil detection: pairwise check + table seating check
-- Trust ladder: 6 levels, $0 → $500+/month Sybil cost
+**Squads 2-of-3 Multisig:** [`3gCjhVMKazL2VKQgqQ8vP93vLzPTos1e7XLm1jr7X9t5`](https://explorer.solana.com/address/3gCjhVMKazL2VKQgqQ8vP93vLzPTos1e7XLm1jr7X9t5?cluster=devnet)
 
-### 🔐 STARK Proofs (Privacy-Preserving)
-- Threshold proofs: "score ≥ 60" without revealing score
-- Consistency proofs: "maintained threshold for 30 days"
-- Streak proofs: "N consecutive periods above threshold"
-- Stability proofs: "variance below maximum"
-- M31 field arithmetic, Poseidon commitments, FRI protocol
-
-### 🧠 On-Chain AI Verification
-- POA-Scorer deployed to Solana devnet via Cauldron/Frostbite RISC-V VM
-- 14 Anchor instructions (launchpad + SAP identity + lifecycle)
-- AgentIdentity PDA: 366 bytes (identity, trust, DePIN, delegation, rotation)
-- Identity rotation & delegation authority support
-- 12-dimension behavioral scoring
-- Execution trace system with Merkle commitments
-
-### 🏛️ Governance & Multisig
-- Squads multisig deployed on devnet ([`3gCjhV...`](https://explorer.solana.com/address/3gCjhVMKazL2VKQgqQ8vP93vLzPTos1e7XLm1jr7X9t5?cluster=devnet))
-- 2-of-3 threshold — no single entity can unilaterally attest
-- [4-phase decentralization roadmap](GOVERNANCE.md): Single Authority → Multisig → Validator Network → DAO
-- Partner seats open for SATI, SlotScribe, Agent Casino, and community
-
-### ⛓️ Solana Integrations (6 Real)
-- **Cauldron**: On-chain AI inference
-- **Pyth**: Live oracle price feeds
-- **Jupiter**: V6 swap quotes
-- **Memo Program**: Verification + trace anchoring
-- **RPC**: Balance queries
-- **DePIN**: Device attestation PDAs
-
-### 📊 Project Registry
-- Evaluated all 174 Colosseum hackathon projects
-- Automated GitHub analysis + PoA scoring
-- Live searchable/sortable directory
-
-### 🤝 Cross-Project Integration
-- Agent Casino: [PR #2 merged](https://github.com/Romulus-Sol/agent-casino/pull/2) — verification-gated high-roller tables
-- Security review: Input validation, fetch timeouts, bounded cache
+4-phase decentralization: Single authority → Multisig (deployed ✅) → Validator network → DAO via Realms. See [GOVERNANCE.md](GOVERNANCE.md).
 
 ---
 
-## API Overview
+## The Full Stack
 
-**Base URL:** `https://web-production-419d9.up.railway.app`
+| Layer | What | Where |
+|-------|------|-------|
+| **On-Chain** | 14-instruction Anchor program + Squads multisig | This repo |
+| **On-Chain AI** | POA-Scorer via Cauldron RISC-V VM | [poa-scorer](https://github.com/tradingstarllc/poa-scorer) |
+| **Server** | 90+ API endpoints, rate limiting, security | [moltlaunch-site](https://github.com/tradingstarllc/moltlaunch-site) |
+| **SDK** | `@moltlaunch/sdk` v2.4.0 — 30+ methods | [moltlaunch-sdk](https://github.com/tradingstarllc/moltlaunch-sdk) |
+| **Protocol** | SAP spec — 3 proposals | [solana-agent-protocol](https://github.com/tradingstarllc/solana-agent-protocol) |
 
-| Category | Endpoints | Key Features |
-|----------|-----------|-------------|
-| **Identity** | `/api/identity/register`, `/api/identity/depin`, `/api/identity/sybil-check`, `/api/identity/table-check` | Hardware fingerprint, DePIN, Sybil detection |
-| **Verification** | `/api/verify/deep`, `/api/verify/quick`, `/api/verify/status/:id` | Proof-of-Agent scoring, batch checks |
-| **STARK Proofs** | `/api/stark/generate/:id`, `/api/stark/consistency/:id`, `/api/stark/streak/:id`, `/api/stark/stability/:id` | Privacy-preserving threshold proofs |
-| **Traces** | `/api/traces`, `/api/traces/:id/score`, `/api/traces/:id/anchor` | Behavioral scoring, on-chain anchoring |
-| **Solana** | `/api/anchor/verification`, `/api/solana/balance/:addr`, `/api/jupiter/quote` | On-chain writes, live queries |
-| **Registry** | `/api/verify/list`, `/api/leaderboard`, `/api/agents` | Project directory, rankings |
-| **Pools** | `/api/pools`, `/api/pool/apply`, `/api/stake` | Community-funded agent development |
+## Solana Integration
 
-**90+ total endpoints** — [Full docs](https://web-production-419d9.up.railway.app/docs.html)
-
----
-
-## Community & Engagement
-
-| Metric | Value |
-|--------|-------|
-| Forum posts | 27 |
-| Forum interactions | 400+ |
-| Unique agents engaged | 30+ |
-| Integration partners | 6 (Agent Casino, CLAWIN, SlotScribe, Agent Arena, AAP, opspawn) |
-| Website visitors | 22+ unique |
-| npm packages | 3 published |
-| GitHub PRs | 1 merged (cross-project) |
-
-**Live pages:**
-- [🌐 Homepage](https://web-production-419d9.up.railway.app)
-- [📊 Dashboard](https://web-production-419d9.up.railway.app/dashboard.html)
-- [📋 Registry](https://web-production-419d9.up.railway.app/registry.html)
-- [🕸️ Network Graph](https://web-production-419d9.up.railway.app/network.html)
-- [👤 About](https://web-production-419d9.up.railway.app/about.html)
-- [📄 skill.md](https://web-production-419d9.up.railway.app/skill.md)
-- [📖 Docs](https://web-production-419d9.up.railway.app/docs.html)
-
----
-
-## The Pivot Story
-
-| Day | Direction | What Survived |
-|-----|-----------|--------------|
-| 1-2 | Token launchpad | Staking pool concept |
-| 3 | Agent verification | Scoring engine, SDK, 90+ endpoints |
-| 4-5 | STARK proofs | Privacy-preserving reputation |
-| 6 | Hardware identity | DePIN anti-Sybil, project registry |
-
-Each pivot made the product sharper. The verification layer is the constant.
-
----
+| Integration | Type | Verified |
+|------------|------|:--------:|
+| Anchor program | Custom program deployed | ✅ |
+| Cauldron AI | On-chain RISC-V inference | ✅ |
+| Squads multisig | Governance | ✅ |
+| Memo anchoring | On-chain writes | ✅ |
+| Pyth oracles | Live price feeds | ✅ |
+| Jupiter V6 | DEX quotes | ✅ |
+| DePIN PDA | getAccountInfo verification | ✅ |
+| Solana RPC | Balance + account queries | ✅ |
 
 ## Standards & Ecosystem
 
 ### Solana Agent Protocol (SAP)
 
-We've proposed the **[Solana Agent Protocol](https://github.com/tradingstarllc/solana-agent-protocol)** — application-layer standards for agent trust on Solana:
+| Proposal | Title |
+|----------|-------|
+| [SAP-0001](https://github.com/tradingstarllc/solana-agent-protocol/blob/main/proposals/SAP-0001-validation-protocol.md) | Validation Protocol |
+| [SAP-0002](https://github.com/tradingstarllc/solana-agent-protocol/blob/main/proposals/SAP-0002-hardware-identity.md) | Hardware-Anchored Identity |
+| [SAP-0003](https://github.com/tradingstarllc/solana-agent-protocol/blob/main/proposals/SAP-0003-depin-attestation.md) | DePIN Device Attestation |
 
-| Proposal | Title | Focus |
-|----------|-------|-------|
-| [SAP-0001](https://github.com/tradingstarllc/solana-agent-protocol/blob/main/proposals/SAP-0001-validation-protocol.md) | Validation Protocol | Unified request/response + Trust Ladder |
-| [SAP-0002](https://github.com/tradingstarllc/solana-agent-protocol/blob/main/proposals/SAP-0002-hardware-identity.md) | Hardware-Anchored Identity | TPM + DePIN fingerprinting |
-| [SAP-0003](https://github.com/tradingstarllc/solana-agent-protocol/blob/main/proposals/SAP-0003-depin-attestation.md) | DePIN Device Attestation | io.net, Helium, Nosana binding |
+**sRFC #9:** [solana-foundation/SRFCs/discussions/9](https://github.com/solana-foundation/SRFCs/discussions/9)
 
-**sRFC submitted:** [solana-foundation/SRFCs Discussion #9](https://github.com/solana-foundation/SRFCs/discussions/9)
+### Cross-Ecosystem
 
-### Relationship to ERC-8004 & SATI
+| Standard | Relationship |
+|----------|-------------|
+| [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) | Cross-chain compatible responses |
+| [SATI v2](https://github.com/cascade-protocol/sati) | Integration proposed ([Issue #3](https://github.com/cascade-protocol/sati/issues/3)) |
+| [Agent Casino](https://github.com/Romulus-Sol/agent-casino) | PR merged ([#2](https://github.com/Romulus-Sol/agent-casino/pull/2)) |
 
-Two parallel efforts address agent trust on different chains:
+## Quick Start
 
-| Standard | Chain | Authors | Focus |
-|----------|-------|---------|-------|
-| [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) | Ethereum | MetaMask, EF, Google, Coinbase | Identity + Reputation + Validation registries |
-| [SATI v2](https://github.com/cascade-protocol/sati) | Solana | Cascade Protocol | Token-2022 identity + SAS attestations |
-| **SAP** | Solana | MoltLaunch | Hardware identity + DePIN + STARK proofs |
+```bash
+npm install @moltlaunch/sdk
 
-**Key insight:** ERC-8004 and SATI use wallet/token-based identity — Sybil cost is ~$0. SAP adds hardware-anchored identity that makes Sybil attacks cost $100-500+/month per identity.
+# Verify an agent
+curl -X POST https://web-production-419d9.up.railway.app/api/verify/deep \
+  -H "Content-Type: application/json" \
+  -d '{"agentId": "my-agent", "capabilities": ["trading"]}'
 
-### How They Compose
-
+# Full SAP validation
+curl -X POST https://web-production-419d9.up.railway.app/api/validate \
+  -d '{"agentId": "my-agent", "validationType": ["identity","scoring","sybil","proof"], "trustRequired": 3}'
 ```
-SATI provides:                    SAP adds:
-├── Identity (Token-2022 NFTs)    ├── Hardware fingerprint (anti-Sybil)
-├── Reputation (SAS feedback)     ├── STARK proofs (privacy-preserving)
-└── Validation (SAS attestations) └── DePIN device binding (physical proof)
-```
 
-**SAP is the Sybil-resistance layer that SATI needs.** SATI is the identity layer that SAP should adopt. We've [proposed integration](https://github.com/solana-foundation/SRFCs/discussions/7#discussioncomment-15737473) on the SATI sRFC.
+## The Business
 
-### Convergent Evolution
+| | |
+|---|---|
+| **Revenue** | x402 micropayments per verification ($0.01-0.10) |
+| **Market** | DePIN ($3.5T) × Agent economy (forming) |
+| **Moat** | DePIN hardware identity — only possible on Solana |
+| **Governance** | Squads → Validators → DAO ([GOVERNANCE.md](GOVERNANCE.md)) |
 
-We discovered an unrelated project also called `moltlaunch` on npm — building on Base/Ethereum with ERC-8004 compliance. Same name, same problem, different chains. [Full analysis on the Colosseum forum](https://agents.colosseum.com/forum/posts/2929).
+## Community
 
-When independent teams converge on the same problem, the problem is real.
+| Metric | Value |
+|--------|-------|
+| Forum posts | 40+ |
+| Forum interactions | 700+ |
+| Unique agents engaged | 30+ |
+| Integration partners | 6 |
+| Cross-project PRs | 1 merged |
+| Website visitors | 26+ unique |
 
----
+## Links
 
-## Tech Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Runtime | Node.js + Express |
-| Blockchain | Solana (devnet) |
-| AI | Cauldron/Frostbite RISC-V VM |
-| Cryptography | STARK proofs (M31/Poseidon/FRI) |
-| Identity | Hardware fingerprint + TPM + DePIN |
-| Deployment | Railway (auto-deploy from GitHub) |
-| Packages | npm (@moltlaunch/sdk, @moltlaunch/proof-of-agent) |
-| Agent Runtime | OpenClaw + Claude Opus 4.6 |
-
----
-
-## License
-
-MIT
+| Resource | URL |
+|----------|-----|
+| 🌐 Live Site | https://web-production-419d9.up.railway.app |
+| 📊 Pitch Deck | https://web-production-419d9.up.railway.app/pitch.html |
+| 📄 skill.md | https://web-production-419d9.up.railway.app/skill.md |
+| 📋 Registry | https://web-production-419d9.up.railway.app/registry.html |
+| 🕸️ Network | https://web-production-419d9.up.railway.app/network.html |
+| 👤 About | https://web-production-419d9.up.railway.app/about.html |
+| 📖 FAQ | https://web-production-419d9.up.railway.app/docs/FAQ.md |
 
 ---
 
 <p align="center">
-  <strong>Built by an AI agent for AI agents</strong><br>
-  <a href="https://web-production-419d9.up.railway.app/about.html">About the team</a> · 
-  <a href="https://web-production-419d9.up.railway.app/manifesto.html">Manifesto</a> · 
-  <a href="https://web-production-419d9.up.railway.app/network.html">Network</a>
+  <em>Built by one human + one AI agent on OpenClaw.<br>
+  8 days. 4 pivots. 1 thesis:<br>
+  <strong>The agent economy needs trust infrastructure, and Solana is the only chain that can provide it.</strong></em>
 </p>
