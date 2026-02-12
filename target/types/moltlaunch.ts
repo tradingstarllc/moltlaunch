@@ -99,6 +99,61 @@ export type Moltlaunch = {
       ]
     },
     {
+      "name": "closeAttestation",
+      "discriminator": [
+        249,
+        84,
+        133,
+        23,
+        48,
+        175,
+        252,
+        221
+      ],
+      "accounts": [
+        {
+          "name": "attestation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  116,
+                  116,
+                  101,
+                  115,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "attestation.agent",
+                "account": "attestation"
+              },
+              {
+                "kind": "account",
+                "path": "attestation.authority",
+                "account": "attestation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authoritySigner",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "flagAgent",
       "discriminator": [
         235,
@@ -530,6 +585,54 @@ export type Moltlaunch = {
       "args": []
     },
     {
+      "name": "setPaused",
+      "discriminator": [
+        91,
+        60,
+        125,
+        192,
+        176,
+        225,
+        166,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  108,
+                  116,
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
+        }
+      ]
+    },
+    {
       "name": "submitAttestation",
       "discriminator": [
         238,
@@ -689,6 +792,54 @@ export type Moltlaunch = {
         {
           "name": "expiresAt",
           "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "transferAdmin",
+      "discriminator": [
+        42,
+        242,
+        66,
+        106,
+        228,
+        10,
+        111,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  108,
+                  116,
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newAdmin",
+          "type": "pubkey"
         }
       ]
     },
@@ -968,6 +1119,11 @@ export type Moltlaunch = {
       "code": 6009,
       "name": "invalidSignalType",
       "msg": "Invalid signal type"
+    },
+    {
+      "code": 6010,
+      "name": "attestationNotRevoked",
+      "msg": "Attestation is not revoked"
     }
   ],
   "types": [

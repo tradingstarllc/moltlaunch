@@ -137,6 +137,9 @@ pub mod moltlaunch {
 
         let now = Clock::get()?.unix_timestamp;
 
+        // Expiry must be in the future
+        require!(expires_at > now, MoltError::AttestationExpired);
+
         // Create the attestation
         let attestation = &mut ctx.accounts.attestation;
         attestation.agent = agent.wallet;
@@ -150,11 +153,21 @@ pub mod moltlaunch {
         attestation.revoked = false;
         attestation.bump = ctx.bumps.attestation;
 
-        // Update the agent's signal flags based on signal type
+        // Update the agent's signal flags — upgrade only, never downgrade
         match signal_type {
-            SignalType::InfraCloud => agent.infra_type = InfraType::Cloud,
-            SignalType::InfraTEE => agent.infra_type = InfraType::TEE,
-            SignalType::InfraDePIN => agent.infra_type = InfraType::DePIN,
+            SignalType::InfraCloud => {
+                if agent.infra_type == InfraType::Unknown {
+                    agent.infra_type = InfraType::Cloud;
+                }
+            }
+            SignalType::InfraTEE => {
+                if agent.infra_type == InfraType::Unknown || agent.infra_type == InfraType::Cloud {
+                    agent.infra_type = InfraType::TEE;
+                }
+            }
+            SignalType::InfraDePIN => {
+                agent.infra_type = InfraType::DePIN; // DePIN is always highest
+            }
             SignalType::EconomicStake => agent.has_economic_stake = true,
             SignalType::HardwareBinding => agent.has_hardware_binding = true,
             SignalType::General => {}
@@ -255,43 +268,109 @@ pub mod moltlaunch {
 
     // =========================================================================
     // 9. refresh_identity_signals — PERMISSIONLESS trust score recalculation
+    //    Reads attestation PDAs from remaining_accounts, resets & rebuilds.
     // =========================================================================
-    pub fn refresh_identity_signals(ctx: Context<RefreshIdentitySignals>) -> Result<()> {
+    pub fn refresh_identity_signals<'info>(
+        ctx: Context<'_, '_, 'info, 'info, RefreshIdentitySignals<'info>>,
+    ) -> Result<()> {
         let config = &ctx.accounts.config;
         let agent = &mut ctx.accounts.agent;
-
         let old_score = agent.trust_score;
 
-        // Derive trust score from current signals
-        let mut score: u8 = 0;
+        // Reset all signals
+        agent.infra_type = InfraType::Unknown;
+        agent.has_economic_stake = false;
+        agent.has_hardware_binding = false;
+        agent.attestation_count = 0;
+        agent.last_verified = 0;
 
+        let now = Clock::get()?.unix_timestamp;
+        let program_id = crate::ID;
+
+        // Rebuild from remaining accounts (attestation PDAs)
+        for account_info in ctx.remaining_accounts.iter() {
+            // Must be owned by our program
+            if account_info.owner != &program_id {
+                continue;
+            }
+
+            let data = account_info.try_borrow_data()?;
+            // Minimum size: 8 (discriminator) + Attestation fields
+            if data.len() < 8 + Attestation::INIT_SPACE {
+                continue;
+            }
+
+            // Check discriminator matches Attestation
+            let disc = &data[..8];
+            if disc != Attestation::DISCRIMINATOR {
+                continue;
+            }
+
+            // Deserialize the account data (skip 8-byte discriminator)
+            let attestation: Attestation =
+                Attestation::try_deserialize(&mut &data[..]).map_err(|_| MoltError::InvalidSignalType)?;
+
+            // Skip if not for this agent
+            if attestation.agent != agent.wallet {
+                continue;
+            }
+            // Skip revoked
+            if attestation.revoked {
+                continue;
+            }
+            // Skip expired
+            if attestation.expires_at > 0 && attestation.expires_at < now {
+                continue;
+            }
+
+            // Apply signal
+            match attestation.signal_contributed {
+                SignalType::InfraCloud => {
+                    if (agent.infra_type.clone() as u8) < (InfraType::Cloud as u8) {
+                        agent.infra_type = InfraType::Cloud;
+                    }
+                }
+                SignalType::InfraTEE => {
+                    if (agent.infra_type.clone() as u8) < (InfraType::TEE as u8) {
+                        agent.infra_type = InfraType::TEE;
+                    }
+                }
+                SignalType::InfraDePIN => {
+                    agent.infra_type = InfraType::DePIN; // highest
+                }
+                SignalType::EconomicStake => agent.has_economic_stake = true,
+                SignalType::HardwareBinding => agent.has_hardware_binding = true,
+                SignalType::General => {}
+            }
+
+            agent.attestation_count = agent.attestation_count.saturating_add(1);
+            if attestation.created_at > agent.last_verified {
+                agent.last_verified = attestation.created_at;
+            }
+        }
+
+        // Derive trust score
+        let mut score: u8 = 0;
         if agent.attestation_count >= 1 {
             score = score.saturating_add(20);
         }
-
         match agent.infra_type {
             InfraType::Cloud => score = score.saturating_add(10),
             InfraType::TEE => score = score.saturating_add(25),
             InfraType::DePIN => score = score.saturating_add(35),
             InfraType::Unknown => {}
         }
-
         if agent.has_economic_stake {
             score = score.saturating_add(25);
         }
-
         if agent.has_hardware_binding {
             score = score.saturating_add(20);
         }
-
-        // Flagged agents always have score 0
         if agent.is_flagged {
             score = 0;
         }
 
         agent.trust_score = score;
-
-        // Sync nonce to current global nonce
         agent.nonce = config.revocation_nonce;
 
         emit!(TrustScoreRefreshed {
@@ -300,6 +379,50 @@ pub mod moltlaunch {
             new_score: score,
         });
 
+        Ok(())
+    }
+
+    // =========================================================================
+    // 10. close_attestation — close a revoked attestation PDA, reclaim rent
+    // =========================================================================
+    pub fn close_attestation(ctx: Context<CloseAttestation>) -> Result<()> {
+        let attestation = &ctx.accounts.attestation;
+        require!(attestation.revoked, MoltError::AttestationNotRevoked);
+        require!(
+            attestation.authority == ctx.accounts.authority_signer.key(),
+            MoltError::Unauthorized
+        );
+        // Account is closed via close = authority_signer in the Accounts struct
+        emit!(AttestationRevoked {
+            agent: attestation.agent,
+            authority: attestation.authority,
+        });
+        Ok(())
+    }
+
+    // =========================================================================
+    // 11. set_paused — admin can pause/unpause the protocol
+    // =========================================================================
+    pub fn set_paused(ctx: Context<AdminAction>, paused: bool) -> Result<()> {
+        let config = &mut ctx.accounts.config;
+        require!(
+            ctx.accounts.admin.key() == config.admin,
+            MoltError::Unauthorized
+        );
+        config.paused = paused;
+        Ok(())
+    }
+
+    // =========================================================================
+    // 12. transfer_admin — admin transfers admin role
+    // =========================================================================
+    pub fn transfer_admin(ctx: Context<AdminAction>, new_admin: Pubkey) -> Result<()> {
+        let config = &mut ctx.accounts.config;
+        require!(
+            ctx.accounts.admin.key() == config.admin,
+            MoltError::Unauthorized
+        );
+        config.admin = new_admin;
         Ok(())
     }
 }
@@ -509,6 +632,32 @@ pub struct RefreshIdentitySignals<'info> {
     pub agent: Account<'info, AgentIdentity>,
 }
 
+#[derive(Accounts)]
+pub struct CloseAttestation<'info> {
+    #[account(
+        mut,
+        close = authority_signer,
+        seeds = [b"attestation", attestation.agent.as_ref(), attestation.authority.as_ref()],
+        bump = attestation.bump,
+    )]
+    pub attestation: Account<'info, Attestation>,
+
+    #[account(mut)]
+    pub authority_signer: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct AdminAction<'info> {
+    #[account(
+        mut,
+        seeds = [b"moltlaunch"],
+        bump = config.bump,
+    )]
+    pub config: Account<'info, ProtocolConfig>,
+
+    pub admin: Signer<'info>,
+}
+
 // =============================================================================
 // State Accounts
 // =============================================================================
@@ -692,4 +841,7 @@ pub enum MoltError {
 
     #[msg("Invalid signal type")]
     InvalidSignalType,
+
+    #[msg("Attestation is not revoked")]
+    AttestationNotRevoked,
 }

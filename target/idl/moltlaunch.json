@@ -93,6 +93,61 @@
       ]
     },
     {
+      "name": "close_attestation",
+      "discriminator": [
+        249,
+        84,
+        133,
+        23,
+        48,
+        175,
+        252,
+        221
+      ],
+      "accounts": [
+        {
+          "name": "attestation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  116,
+                  116,
+                  101,
+                  115,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "attestation.agent",
+                "account": "Attestation"
+              },
+              {
+                "kind": "account",
+                "path": "attestation.authority",
+                "account": "Attestation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority_signer",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "flag_agent",
       "discriminator": [
         235,
@@ -524,6 +579,54 @@
       "args": []
     },
     {
+      "name": "set_paused",
+      "discriminator": [
+        91,
+        60,
+        125,
+        192,
+        176,
+        225,
+        166,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  108,
+                  116,
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
+        }
+      ]
+    },
+    {
       "name": "submit_attestation",
       "discriminator": [
         238,
@@ -683,6 +786,54 @@
         {
           "name": "expires_at",
           "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "transfer_admin",
+      "discriminator": [
+        42,
+        242,
+        66,
+        106,
+        228,
+        10,
+        111,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  108,
+                  116,
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
         }
       ]
     },
@@ -962,6 +1113,11 @@
       "code": 6009,
       "name": "InvalidSignalType",
       "msg": "Invalid signal type"
+    },
+    {
+      "code": 6010,
+      "name": "AttestationNotRevoked",
+      "msg": "Attestation is not revoked"
     }
   ],
   "types": [
