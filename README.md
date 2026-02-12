@@ -12,8 +12,8 @@
 </p>
 
 <p align="center">
-  <a href="https://web-production-419d9.up.railway.app"><img src="https://img.shields.io/badge/🌐_Live_Site-Railway-blueviolet" alt="Live" /></a>
-  <a href="https://web-production-419d9.up.railway.app/pitch.html"><img src="https://img.shields.io/badge/📊_Pitch_Deck-11_slides-blue" alt="Pitch" /></a>
+  <a href="https://youragent.id"><img src="https://img.shields.io/badge/🌐_Live_Site-Railway-blueviolet" alt="Live" /></a>
+  <a href="https://youragent.id/pitch.html"><img src="https://img.shields.io/badge/📊_Pitch_Deck-11_slides-blue" alt="Pitch" /></a>
   <a href="https://www.npmjs.com/package/@moltlaunch/sdk"><img src="https://img.shields.io/npm/v/@moltlaunch/sdk" alt="SDK" /></a>
   <a href="https://github.com/solana-foundation/SRFCs/discussions/9"><img src="https://img.shields.io/badge/sRFC-%239-green" alt="sRFC" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT" /></a>
@@ -150,12 +150,12 @@ Any Solana program can CPI into this PDA to check: Is this agent verified? What 
 npm install @moltlaunch/sdk
 
 # Verify an agent
-curl -X POST https://web-production-419d9.up.railway.app/api/verify/deep \
+curl -X POST https://youragent.id/api/verify/deep \
   -H "Content-Type: application/json" \
   -d '{"agentId": "my-agent", "capabilities": ["trading"]}'
 
 # Full SAP validation
-curl -X POST https://web-production-419d9.up.railway.app/api/validate \
+curl -X POST https://youragent.id/api/validate \
   -d '{"agentId": "my-agent", "validationType": ["identity","scoring","sybil","proof"], "trustRequired": 3}'
 ```
 
@@ -183,13 +183,13 @@ curl -X POST https://web-production-419d9.up.railway.app/api/validate \
 
 | Resource | URL |
 |----------|-----|
-| 🌐 Live Site | https://web-production-419d9.up.railway.app |
-| 📊 Pitch Deck | https://web-production-419d9.up.railway.app/pitch.html |
-| 📄 skill.md | https://web-production-419d9.up.railway.app/skill.md |
-| 📋 Registry | https://web-production-419d9.up.railway.app/registry.html |
-| 🕸️ Network | https://web-production-419d9.up.railway.app/network.html |
-| 👤 About | https://web-production-419d9.up.railway.app/about.html |
-| 📖 FAQ | https://web-production-419d9.up.railway.app/docs/FAQ.md |
+| 🌐 Live Site | https://youragent.id |
+| 📊 Pitch Deck | https://youragent.id/pitch.html |
+| 📄 skill.md | https://youragent.id/skill.md |
+| 📋 Registry | https://youragent.id/registry.html |
+| 🕸️ Network | https://youragent.id/network.html |
+| 👤 About | https://youragent.id/about.html |
+| 📖 FAQ | https://youragent.id/docs/FAQ.md |
 
 ---
 
