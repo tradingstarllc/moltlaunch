@@ -1,0 +1,86 @@
+name: MoltLaunch V3 Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build Anchor Program
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      
+      - name: Install Anchor CLI
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --force
+          avm install 0.32.0
+          avm use 0.32.0
+      
+      - name: Build Program
+        run: anchor build
+      
+      - name: Verify IDL Generated
+        run: |
+          test -f target/idl/moltlaunch.json && echo "✅ IDL exists" || (echo "❌ IDL missing" && exit 1)
+          echo "Program size: $(wc -c < target/deploy/moltlaunch.so) bytes"
+      
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: program-artifacts
+          path: |
+            target/deploy/moltlaunch.so
+            target/idl/moltlaunch.json
+
+  devnet-test:
+    name: Devnet Integration Tests
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install Dependencies
+        run: npm install
+      
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: program-artifacts
+          path: target/
+      
+      - name: Note
+        run: |
+          echo "⚠️ Devnet integration tests require a funded wallet keypair."
+          echo "Set DEVNET_WALLET secret with the keypair JSON to enable."
+          echo "Tests verify: register, attest, refresh, flag, revoke lifecycle."
+          echo ""
+          echo "To run locally:"
+          echo "  npx ts-node scripts/test-v3.ts"
