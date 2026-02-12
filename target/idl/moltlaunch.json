@@ -4,195 +4,33 @@
     "name": "moltlaunch",
     "version": "0.1.0",
     "spec": "0.1.0",
-    "description": "MoltLaunch - Solana Agent Validation Protocol"
+    "description": "MoltLaunch V3 — Composable Signal Architecture for AI Agent Identity"
   },
   "instructions": [
     {
-      "name": "attest_verification",
-      "docs": [
-        "Record a PoA verification score on-chain (authority only)"
-      ],
+      "name": "add_authority",
       "discriminator": [
-        174,
-        250,
-        164,
-        34,
-        215,
-        158,
-        186,
-        134
+        229,
+        9,
+        106,
+        73,
+        91,
+        213,
+        109,
+        183
       ],
       "accounts": [
         {
-          "name": "identity",
-          "writable": true,
+          "name": "config",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  115,
-                  97,
-                  112,
-                  45,
-                  105,
-                  100,
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "identity.owner",
-                "account": "AgentIdentity"
-              }
-            ]
-          }
-        },
-        {
-          "name": "launchpad",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
+                  109,
+                  111,
                   108,
-                  97,
-                  117,
-                  110,
-                  99,
-                  104,
-                  112,
-                  97,
-                  100
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "authority",
-          "signer": true,
-          "relations": [
-            "launchpad"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "score",
-          "type": "u8"
-        },
-        {
-          "name": "_tier",
-          "type": "string"
-        },
-        {
-          "name": "attestation_hash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "bind_depin_device",
-      "docs": [
-        "Link identity to a DePIN device PDA"
-      ],
-      "discriminator": [
-        134,
-        210,
-        151,
-        92,
-        92,
-        34,
-        209,
-        10
-      ],
-      "accounts": [
-        {
-          "name": "identity",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  97,
-                  112,
-                  45,
-                  105,
-                  100,
-                  101,
-                  110,
                   116,
-                  105,
-                  116,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "owner"
-              }
-            ]
-          }
-        },
-        {
-          "name": "device_pda"
-        },
-        {
-          "name": "owner",
-          "signer": true,
-          "relations": [
-            "identity"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "depin_provider",
-          "type": "string"
-        },
-        {
-          "name": "_device_id",
-          "type": "string"
-        }
-      ]
-    },
-    {
-      "name": "buy_tokens",
-      "docs": [
-        "Buy tokens from bonding curve"
-      ],
-      "discriminator": [
-        189,
-        21,
-        230,
-        133,
-        247,
-        2,
-        110,
-        42
-      ],
-      "accounts": [
-        {
-          "name": "launch",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
                   108,
                   97,
                   117,
@@ -200,35 +38,43 @@
                   99,
                   104
                 ]
-              },
-              {
-                "kind": "account",
-                "path": "launch.agent",
-                "account": "Launch"
               }
             ]
           }
         },
         {
-          "name": "mint",
-          "writable": true
+          "name": "authority",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority_pubkey"
+              }
+            ]
+          }
         },
         {
-          "name": "vault",
-          "writable": true
+          "name": "authority_pubkey"
         },
         {
-          "name": "buyer",
+          "name": "admin",
           "writable": true,
           "signer": true
-        },
-        {
-          "name": "buyer_token_account",
-          "writable": true
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "system_program",
@@ -237,35 +83,39 @@
       ],
       "args": [
         {
-          "name": "sol_amount",
-          "type": "u64"
+          "name": "authority_type",
+          "type": {
+            "defined": {
+              "name": "AuthorityType"
+            }
+          }
         }
       ]
     },
     {
-      "name": "create_launch",
-      "docs": [
-        "Create a new token launch with bonding curve"
-      ],
+      "name": "flag_agent",
       "discriminator": [
-        239,
-        223,
-        255,
-        134,
-        39,
-        121,
-        127,
-        62
+        235,
+        111,
+        155,
+        252,
+        101,
+        79,
+        59,
+        219
       ],
       "accounts": [
         {
-          "name": "launch",
-          "writable": true,
+          "name": "config",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
+                  109,
+                  111,
+                  108,
+                  116,
                   108,
                   97,
                   117,
@@ -273,16 +123,38 @@
                   99,
                   104
                 ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
               },
               {
                 "kind": "account",
-                "path": "agent"
+                "path": "authority_signer"
               }
             ]
           }
         },
         {
           "name": "agent",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -297,238 +169,31 @@
               },
               {
                 "kind": "account",
-                "path": "owner"
-              }
-            ]
-          }
-        },
-        {
-          "name": "mint",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "owner",
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "agent"
-          ]
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "params",
-          "type": {
-            "defined": {
-              "name": "LaunchParams"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "delegate_authority",
-      "docs": [
-        "Delegate authority over this identity to another keypair"
-      ],
-      "discriminator": [
-        228,
-        17,
-        85,
-        163,
-        65,
-        139,
-        36,
-        206
-      ],
-      "accounts": [
-        {
-          "name": "identity",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  97,
-                  112,
-                  45,
-                  105,
-                  100,
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "owner"
-              }
-            ]
-          }
-        },
-        {
-          "name": "owner",
-          "signer": true,
-          "relations": [
-            "identity"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "delegate",
-          "type": "pubkey"
-        },
-        {
-          "name": "scope",
-          "type": {
-            "defined": {
-              "name": "DelegationScope"
-            }
-          }
-        },
-        {
-          "name": "expires_at",
-          "type": "i64"
-        }
-      ]
-    },
-    {
-      "name": "finalize_launch",
-      "docs": [
-        "Finalize launch and create Raydium pool (when graduated)"
-      ],
-      "discriminator": [
-        113,
-        133,
-        62,
-        196,
-        58,
-        212,
-        118,
-        166
-      ],
-      "accounts": [
-        {
-          "name": "launch",
-          "writable": true
-        },
-        {
-          "name": "authority",
-          "signer": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "flag_sybil",
-      "docs": [
-        "Flag an identity as a Sybil (authority only)"
-      ],
-      "discriminator": [
-        131,
-        60,
-        253,
-        184,
-        193,
-        16,
-        174,
-        70
-      ],
-      "accounts": [
-        {
-          "name": "identity",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  97,
-                  112,
-                  45,
-                  105,
-                  100,
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "identity.owner",
+                "path": "agent.wallet",
                 "account": "AgentIdentity"
               }
             ]
           }
         },
         {
-          "name": "launchpad",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  108,
-                  97,
-                  117,
-                  110,
-                  99,
-                  104,
-                  112,
-                  97,
-                  100
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "authority",
-          "signer": true,
-          "relations": [
-            "launchpad"
-          ]
+          "name": "authority_signer",
+          "signer": true
         }
       ],
       "args": [
         {
-          "name": "reason",
-          "type": "string"
-        },
-        {
-          "name": "matching_identity",
-          "type": "pubkey"
+          "name": "reason_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
         }
       ]
     },
     {
       "name": "initialize",
-      "docs": [
-        "Initialize the launchpad configuration"
-      ],
       "discriminator": [
         175,
         175,
@@ -541,32 +206,30 @@
       ],
       "accounts": [
         {
-          "name": "launchpad",
+          "name": "config",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
+                  109,
+                  111,
+                  108,
+                  116,
                   108,
                   97,
                   117,
                   110,
                   99,
-                  104,
-                  112,
-                  97,
-                  100
+                  104
                 ]
               }
             ]
           }
         },
         {
-          "name": "treasury"
-        },
-        {
-          "name": "authority",
+          "name": "admin",
           "writable": true,
           "signer": true
         },
@@ -575,33 +238,43 @@
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "config",
-          "type": {
-            "defined": {
-              "name": "LaunchpadConfig"
-            }
-          }
-        }
-      ]
+      "args": []
     },
     {
-      "name": "register_agent",
-      "docs": [
-        "Register a new agent for verification"
-      ],
+      "name": "refresh_identity_signals",
       "discriminator": [
-        135,
-        157,
-        66,
-        195,
-        2,
-        113,
-        175,
-        30
+        192,
+        171,
+        41,
+        249,
+        54,
+        12,
+        114,
+        128
       ],
       "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  108,
+                  116,
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104
+                ]
+              }
+            ]
+          }
+        },
         {
           "name": "agent",
           "writable": true,
@@ -619,13 +292,75 @@
               },
               {
                 "kind": "account",
-                "path": "owner"
+                "path": "agent.wallet",
+                "account": "AgentIdentity"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "register_agent",
+      "discriminator": [
+        135,
+        157,
+        66,
+        195,
+        2,
+        113,
+        175,
+        30
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  108,
+                  116,
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104
+                ]
               }
             ]
           }
         },
         {
-          "name": "owner",
+          "name": "agent",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "wallet"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet",
           "writable": true,
           "signer": true
         },
@@ -638,52 +373,59 @@
         {
           "name": "name",
           "type": "string"
-        },
-        {
-          "name": "capabilities",
-          "type": {
-            "vec": "string"
-          }
-        },
-        {
-          "name": "proof_url",
-          "type": "string"
         }
       ]
     },
     {
-      "name": "register_identity",
-      "docs": [
-        "Register a hardware-anchored identity PDA for an agent"
-      ],
+      "name": "remove_authority",
       "discriminator": [
-        164,
-        118,
-        227,
-        177,
-        47,
-        176,
-        187,
-        248
+        242,
+        104,
+        208,
+        132,
+        190,
+        250,
+        74,
+        216
       ],
       "accounts": [
         {
-          "name": "identity",
+          "name": "config",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  115,
-                  97,
-                  112,
-                  45,
-                  105,
-                  100,
-                  101,
-                  110,
+                  109,
+                  111,
+                  108,
                   116,
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
                   105,
                   116,
                   121
@@ -691,13 +433,216 @@
               },
               {
                 "kind": "account",
-                "path": "owner"
+                "path": "authority.pubkey",
+                "account": "Authority"
               }
             ]
           }
         },
         {
-          "name": "owner",
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "revoke_attestation",
+      "discriminator": [
+        12,
+        156,
+        103,
+        161,
+        194,
+        246,
+        211,
+        179
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  108,
+                  116,
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "attestation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  116,
+                  116,
+                  101,
+                  115,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "attestation.agent",
+                "account": "Attestation"
+              },
+              {
+                "kind": "account",
+                "path": "attestation.authority",
+                "account": "Attestation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority_signer",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "submit_attestation",
+      "discriminator": [
+        238,
+        220,
+        255,
+        105,
+        183,
+        211,
+        40,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  108,
+                  116,
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority_signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "agent",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "agent.wallet",
+                "account": "AgentIdentity"
+              }
+            ]
+          }
+        },
+        {
+          "name": "attestation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  116,
+                  116,
+                  101,
+                  115,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "agent.wallet",
+                "account": "AgentIdentity"
+              },
+              {
+                "kind": "account",
+                "path": "authority_signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority_signer",
           "writable": true,
           "signer": true
         },
@@ -708,7 +653,15 @@
       ],
       "args": [
         {
-          "name": "identity_hash",
+          "name": "signal_type",
+          "type": {
+            "defined": {
+              "name": "SignalType"
+            }
+          }
+        },
+        {
+          "name": "attestation_hash",
           "type": {
             "array": [
               "u8",
@@ -717,279 +670,89 @@
           }
         },
         {
-          "name": "trust_level",
-          "type": "u8"
+          "name": "tee_quote",
+          "type": {
+            "option": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
         },
         {
-          "name": "attestation_method",
-          "type": "string"
+          "name": "expires_at",
+          "type": "i64"
         }
       ]
     },
     {
-      "name": "revoke_delegation",
-      "docs": [
-        "Revoke an existing delegation"
-      ],
+      "name": "unflag_agent",
       "discriminator": [
-        188,
-        92,
-        135,
-        67,
-        160,
-        181,
-        54,
-        62
+        154,
+        213,
+        255,
+        157,
+        177,
+        64,
+        122,
+        85
       ],
       "accounts": [
         {
-          "name": "identity",
-          "writable": true,
+          "name": "config",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  115,
-                  97,
-                  112,
-                  45,
-                  105,
-                  100,
-                  101,
-                  110,
+                  109,
+                  111,
+                  108,
                   116,
-                  105,
-                  116,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "owner"
-              }
-            ]
-          }
-        },
-        {
-          "name": "owner",
-          "signer": true,
-          "relations": [
-            "identity"
-          ]
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "rotate_identity",
-      "docs": [
-        "Rotate identity to a new hardware fingerprint (preserves score, drops trust)"
-      ],
-      "discriminator": [
-        182,
-        215,
-        197,
-        254,
-        178,
-        56,
-        199,
-        236
-      ],
-      "accounts": [
-        {
-          "name": "identity",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  97,
-                  112,
-                  45,
-                  105,
-                  100,
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "owner"
-              }
-            ]
-          }
-        },
-        {
-          "name": "owner",
-          "signer": true,
-          "relations": [
-            "identity"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "new_identity_hash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "migration_proof",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "update_trust_level",
-      "docs": [
-        "Update trust level after new attestation (owner only)"
-      ],
-      "discriminator": [
-        226,
-        164,
-        214,
-        50,
-        71,
-        113,
-        54,
-        106
-      ],
-      "accounts": [
-        {
-          "name": "identity",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  97,
-                  112,
-                  45,
-                  105,
-                  100,
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "owner"
-              }
-            ]
-          }
-        },
-        {
-          "name": "owner",
-          "signer": true,
-          "relations": [
-            "identity"
-          ]
-        }
-      ],
-      "args": [
-        {
-          "name": "new_level",
-          "type": "u8"
-        },
-        {
-          "name": "evidence_hash",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "verify_agent",
-      "docs": [
-        "Verify an agent (admin only)"
-      ],
-      "discriminator": [
-        206,
-        212,
-        108,
-        12,
-        105,
-        61,
-        100,
-        66
-      ],
-      "accounts": [
-        {
-          "name": "agent",
-          "writable": true
-        },
-        {
-          "name": "launchpad",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
                   108,
                   97,
                   117,
                   110,
                   99,
-                  104,
-                  112,
-                  97,
-                  100
+                  104
                 ]
               }
             ]
           }
         },
         {
-          "name": "authority",
-          "signer": true,
-          "relations": [
-            "launchpad"
-          ]
+          "name": "agent",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "agent.wallet",
+                "account": "AgentIdentity"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
         }
       ],
       "args": []
     }
   ],
   "accounts": [
-    {
-      "name": "Agent",
-      "discriminator": [
-        47,
-        166,
-        112,
-        147,
-        155,
-        197,
-        86,
-        7
-      ]
-    },
     {
       "name": "AgentIdentity",
       "discriminator": [
@@ -1004,237 +767,284 @@
       ]
     },
     {
-      "name": "Launch",
+      "name": "Attestation",
       "discriminator": [
-        144,
-        51,
-        51,
-        163,
-        206,
-        85,
-        213,
-        38
+        152,
+        125,
+        183,
+        86,
+        36,
+        146,
+        121,
+        73
       ]
     },
     {
-      "name": "Launchpad",
+      "name": "Authority",
       "discriminator": [
-        247,
-        20,
-        16,
-        242,
-        203,
-        38,
-        169,
-        160
+        36,
+        108,
+        254,
+        18,
+        167,
+        144,
+        27,
+        36
+      ]
+    },
+    {
+      "name": "ProtocolConfig",
+      "discriminator": [
+        207,
+        91,
+        250,
+        28,
+        152,
+        179,
+        215,
+        209
       ]
     }
   ],
   "events": [
     {
-      "name": "DePINBound",
+      "name": "AgentFlagged",
       "discriminator": [
-        195,
-        25,
-        7,
-        221,
-        244,
-        253,
-        100,
-        151
-      ]
-    },
-    {
-      "name": "DelegationCreated",
-      "discriminator": [
-        20,
-        93,
-        12,
-        34,
-        227,
-        63,
-        100,
-        136
-      ]
-    },
-    {
-      "name": "DelegationRevoked",
-      "discriminator": [
-        59,
-        158,
-        142,
-        49,
-        164,
-        116,
-        220,
-        8
-      ]
-    },
-    {
-      "name": "IdentityRegistered",
-      "discriminator": [
-        5,
-        243,
+        233,
         147,
-        84,
-        8,
-        116,
-        238,
-        24
+        162,
+        100,
+        245,
+        61,
+        175,
+        85
       ]
     },
     {
-      "name": "IdentityRotated",
+      "name": "AgentRegistered",
       "discriminator": [
-        249,
-        231,
-        242,
-        236,
-        76,
-        94,
-        129,
-        91
-      ]
-    },
-    {
-      "name": "SybilFlagged",
-      "discriminator": [
-        246,
-        89,
-        7,
-        82,
-        18,
-        195,
-        228,
-        204
-      ]
-    },
-    {
-      "name": "TrustLevelUpdated",
-      "discriminator": [
+        191,
+        78,
+        217,
         54,
-        223,
-        51,
-        60,
-        169,
-        238,
-        18,
-        171
+        232,
+        100,
+        189,
+        85
       ]
     },
     {
-      "name": "VerificationAttested",
+      "name": "AgentUnflagged",
       "discriminator": [
-        197,
-        206,
+        192,
+        185,
+        66,
+        72,
         56,
-        232,
-        123,
-        214,
-        158,
-        94
+        134,
+        16,
+        37
+      ]
+    },
+    {
+      "name": "AttestationRevoked",
+      "discriminator": [
+        47,
+        106,
+        65,
+        238,
+        200,
+        127,
+        163,
+        50
+      ]
+    },
+    {
+      "name": "AttestationSubmitted",
+      "discriminator": [
+        177,
+        213,
+        117,
+        225,
+        166,
+        11,
+        54,
+        218
+      ]
+    },
+    {
+      "name": "AuthorityAdded",
+      "discriminator": [
+        50,
+        148,
+        144,
+        211,
+        13,
+        58,
+        69,
+        166
+      ]
+    },
+    {
+      "name": "AuthorityRemoved",
+      "discriminator": [
+        141,
+        173,
+        114,
+        187,
+        213,
+        168,
+        90,
+        182
+      ]
+    },
+    {
+      "name": "TrustScoreRefreshed",
+      "discriminator": [
+        111,
+        239,
+        179,
+        205,
+        136,
+        70,
+        213,
+        176
       ]
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "AgentNotVerified",
-      "msg": "Agent is not verified"
+      "name": "Unauthorized",
+      "msg": "Unauthorized"
     },
     {
       "code": 6001,
-      "name": "LaunchNotActive",
-      "msg": "Launch is not active"
+      "name": "AgentAlreadyRegistered",
+      "msg": "Agent already registered"
     },
     {
       "code": 6002,
-      "name": "LaunchNotStarted",
-      "msg": "Launch has not started"
+      "name": "AgentNotFound",
+      "msg": "Agent not found"
     },
     {
       "code": 6003,
-      "name": "LaunchEnded",
-      "msg": "Launch has ended"
+      "name": "AuthorityNotActive",
+      "msg": "Authority is not active"
     },
     {
       "code": 6004,
-      "name": "NotGraduated",
-      "msg": "Launch has not graduated"
+      "name": "AttestationAlreadyExists",
+      "msg": "Attestation already exists"
     },
     {
       "code": 6005,
-      "name": "InvalidTrustLevel",
-      "msg": "Invalid trust level (must be 0-5)"
+      "name": "AttestationExpired",
+      "msg": "Attestation has expired"
     },
     {
       "code": 6006,
-      "name": "IdentityExpired",
-      "msg": "Identity has expired"
+      "name": "AgentFlagged",
+      "msg": "Agent is flagged"
     },
     {
       "code": 6007,
-      "name": "SybilFlagged",
-      "msg": "Identity is flagged as Sybil"
+      "name": "ProtocolPaused",
+      "msg": "Protocol is paused"
     },
     {
       "code": 6008,
-      "name": "DePINDeviceNotFound",
-      "msg": "DePIN device PDA does not exist on-chain"
+      "name": "NameTooLong",
+      "msg": "Name too long (max 32 characters)"
     },
     {
       "code": 6009,
-      "name": "DelegationExpired",
-      "msg": "Delegation has expired"
-    },
-    {
-      "code": 6010,
-      "name": "UnauthorizedDelegate",
-      "msg": "Unauthorized delegate"
-    },
-    {
-      "code": 6011,
-      "name": "InsufficientScope",
-      "msg": "Insufficient delegation scope"
+      "name": "InvalidSignalType",
+      "msg": "Invalid signal type"
     }
   ],
   "types": [
     {
-      "name": "Agent",
+      "name": "AgentFlagged",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "owner",
+            "name": "agent",
             "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "reason_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgentIdentity",
+      "docs": [
+        "AgentIdentity — the composable signal hub. Seeds: [\"agent\", wallet]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "infra_type",
+            "type": {
+              "defined": {
+                "name": "InfraType"
+              }
+            }
+          },
+          {
+            "name": "has_economic_stake",
+            "type": "bool"
+          },
+          {
+            "name": "has_hardware_binding",
+            "type": "bool"
+          },
+          {
+            "name": "attestation_count",
+            "type": "u8"
+          },
+          {
+            "name": "is_flagged",
+            "type": "bool"
+          },
+          {
+            "name": "trust_score",
+            "type": "u8"
+          },
+          {
+            "name": "last_verified",
+            "type": "i64"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "registered_at",
+            "type": "i64"
           },
           {
             "name": "name",
             "type": "string"
-          },
-          {
-            "name": "capabilities",
-            "type": {
-              "vec": "string"
-            }
-          },
-          {
-            "name": "proof_url",
-            "type": "string"
-          },
-          {
-            "name": "verified",
-            "type": "bool"
-          },
-          {
-            "name": "verified_at",
-            "type": {
-              "option": "i64"
-            }
-          },
-          {
-            "name": "created_at",
-            "type": "i64"
           },
           {
             "name": "bump",
@@ -1244,59 +1054,68 @@
       }
     },
     {
-      "name": "AgentIdentity",
+      "name": "AgentRegistered",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "owner",
+            "name": "wallet",
             "type": "pubkey"
           },
           {
-            "name": "identity_hash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "trust_level",
-            "type": "u8"
-          },
-          {
-            "name": "score",
-            "type": "u8"
-          },
-          {
-            "name": "attestation_method",
+            "name": "name",
             "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgentUnflagged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "agent",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Attestation",
+      "docs": [
+        "Attestation — one per (agent, authority) pair.",
+        "Seeds: [\"attestation\", agent_wallet, authority_pubkey]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "agent",
+            "type": "pubkey"
           },
           {
-            "name": "depin_device",
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority_type",
             "type": {
-              "option": "pubkey"
+              "defined": {
+                "name": "AuthorityType"
+              }
             }
           },
           {
-            "name": "depin_provider",
+            "name": "signal_contributed",
             "type": {
-              "option": "string"
+              "defined": {
+                "name": "SignalType"
+              }
             }
           },
           {
-            "name": "sybil_flagged",
-            "type": "bool"
-          },
-          {
-            "name": "sybil_match",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "last_attestation",
+            "name": "attestation_hash",
             "type": {
               "array": [
                 "u8",
@@ -1305,34 +1124,7 @@
             }
           },
           {
-            "name": "last_evidence",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "registered_at",
-            "type": "i64"
-          },
-          {
-            "name": "expires_at",
-            "type": "i64"
-          },
-          {
-            "name": "attested_at",
-            "type": {
-              "option": "i64"
-            }
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "previous_identity_hash",
+            "name": "tee_quote",
             "type": {
               "option": {
                 "array": [
@@ -1343,191 +1135,26 @@
             }
           },
           {
-            "name": "rotated_at",
-            "type": {
-              "option": "i64"
-            }
-          },
-          {
-            "name": "delegate",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "delegation_scope",
-            "type": {
-              "option": "u8"
-            }
-          },
-          {
-            "name": "delegation_expires",
-            "type": {
-              "option": "i64"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "BondingCurveType",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Linear"
-          },
-          {
-            "name": "Exponential"
-          },
-          {
-            "name": "Sigmoid"
-          }
-        ]
-      }
-    },
-    {
-      "name": "DePINBound",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "pubkey"
-          },
-          {
-            "name": "device_pda",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "DelegationCreated",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "pubkey"
-          },
-          {
-            "name": "delegate",
-            "type": "pubkey"
-          },
-          {
-            "name": "scope",
-            "type": "u8"
+            "name": "created_at",
+            "type": "i64"
           },
           {
             "name": "expires_at",
             "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "DelegationRevoked",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "pubkey"
           },
           {
-            "name": "delegate",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "DelegationScope",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Full"
+            "name": "revoked",
+            "type": "bool"
           },
           {
-            "name": "AttestOnly"
-          },
-          {
-            "name": "ReadOnly"
-          },
-          {
-            "name": "SignTransactions"
-          }
-        ]
-      }
-    },
-    {
-      "name": "IdentityRegistered",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "pubkey"
-          },
-          {
-            "name": "identity_hash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "trust_level",
+            "name": "bump",
             "type": "u8"
           }
         ]
       }
     },
     {
-      "name": "IdentityRotated",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "pubkey"
-          },
-          {
-            "name": "old_hash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "new_hash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "migration_proof",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "Launch",
+      "name": "AttestationRevoked",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1536,56 +1163,71 @@
             "type": "pubkey"
           },
           {
-            "name": "mint",
+            "name": "authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AttestationSubmitted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "agent",
             "type": "pubkey"
           },
           {
-            "name": "name",
-            "type": "string"
+            "name": "authority",
+            "type": "pubkey"
           },
           {
-            "name": "symbol",
-            "type": "string"
-          },
-          {
-            "name": "target_raise",
-            "type": "u64"
-          },
-          {
-            "name": "current_raise",
-            "type": "u64"
-          },
-          {
-            "name": "token_supply",
-            "type": "u64"
-          },
-          {
-            "name": "tokens_sold",
-            "type": "u64"
-          },
-          {
-            "name": "bonding_curve_type",
+            "name": "signal_type",
             "type": {
               "defined": {
-                "name": "BondingCurveType"
+                "name": "SignalType"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Authority",
+      "docs": [
+        "Authority — one per authorized verifier. Seeds: [\"authority\", pubkey]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority_type",
+            "type": {
+              "defined": {
+                "name": "AuthorityType"
               }
             }
           },
           {
-            "name": "start_time",
-            "type": "i64"
+            "name": "attestation_count",
+            "type": "u64"
           },
           {
-            "name": "end_time",
-            "type": "i64"
+            "name": "active",
+            "type": "bool"
           },
           {
-            "name": "status",
-            "type": {
-              "defined": {
-                "name": "LaunchStatus"
-              }
-            }
+            "name": "added_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "added_at",
+            "type": "i64"
           },
           {
             "name": "bump",
@@ -1595,70 +1237,7 @@
       }
     },
     {
-      "name": "LaunchParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "symbol",
-            "type": "string"
-          },
-          {
-            "name": "target_raise",
-            "type": "u64"
-          },
-          {
-            "name": "token_supply",
-            "type": "u64"
-          },
-          {
-            "name": "bonding_curve_type",
-            "type": {
-              "defined": {
-                "name": "BondingCurveType"
-              }
-            }
-          },
-          {
-            "name": "start_time",
-            "type": "i64"
-          },
-          {
-            "name": "end_time",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "LaunchStatus",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Pending"
-          },
-          {
-            "name": "Active"
-          },
-          {
-            "name": "Graduated"
-          },
-          {
-            "name": "Finalized"
-          },
-          {
-            "name": "Failed"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Launchpad",
+      "name": "AuthorityAdded",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1667,20 +1246,95 @@
             "type": "pubkey"
           },
           {
-            "name": "treasury",
+            "name": "authority_type",
+            "type": {
+              "defined": {
+                "name": "AuthorityType"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuthorityRemoved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuthorityType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Single"
+          },
+          {
+            "name": "MultisigMember"
+          },
+          {
+            "name": "OracleOperator"
+          },
+          {
+            "name": "NCNValidator"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InfraType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Unknown"
+          },
+          {
+            "name": "Cloud"
+          },
+          {
+            "name": "TEE"
+          },
+          {
+            "name": "DePIN"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolConfig",
+      "docs": [
+        "Singleton protocol configuration — seeds: [\"moltlaunch\"]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
             "type": "pubkey"
           },
           {
-            "name": "platform_fee_bps",
-            "type": "u16"
-          },
-          {
-            "name": "min_raise",
+            "name": "revocation_nonce",
             "type": "u64"
           },
           {
-            "name": "max_raise",
+            "name": "total_agents",
             "type": "u64"
+          },
+          {
+            "name": "total_attestations",
+            "type": "u64"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
           },
           {
             "name": "bump",
@@ -1690,86 +1344,47 @@
       }
     },
     {
-      "name": "LaunchpadConfig",
+      "name": "SignalType",
       "type": {
-        "kind": "struct",
-        "fields": [
+        "kind": "enum",
+        "variants": [
           {
-            "name": "platform_fee_bps",
-            "type": "u16"
+            "name": "InfraCloud"
           },
           {
-            "name": "min_raise",
-            "type": "u64"
+            "name": "InfraTEE"
           },
           {
-            "name": "max_raise",
-            "type": "u64"
+            "name": "InfraDePIN"
+          },
+          {
+            "name": "EconomicStake"
+          },
+          {
+            "name": "HardwareBinding"
+          },
+          {
+            "name": "General"
           }
         ]
       }
     },
     {
-      "name": "SybilFlagged",
+      "name": "TrustScoreRefreshed",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "owner",
+            "name": "agent",
             "type": "pubkey"
           },
           {
-            "name": "matching_identity",
-            "type": "pubkey"
-          },
-          {
-            "name": "reason",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "TrustLevelUpdated",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "pubkey"
-          },
-          {
-            "name": "old_level",
+            "name": "old_score",
             "type": "u8"
           },
           {
-            "name": "new_level",
+            "name": "new_score",
             "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "VerificationAttested",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "pubkey"
-          },
-          {
-            "name": "score",
-            "type": "u8"
-          },
-          {
-            "name": "attestation_hash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
           }
         ]
       }
