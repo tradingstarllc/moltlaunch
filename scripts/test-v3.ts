@@ -1,10 +1,11 @@
+
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
 import * as fs from "fs";
 import * as path from "path";
 
-const idlPath = path.join(__dirname, "../target/idl/moltlaunch.json");
+const idlPath = path.resolve(process.cwd(), "target/idl/moltlaunch.json");
 const idl = JSON.parse(fs.readFileSync(idlPath, "utf-8"));
 const PROGRAM_ID = new PublicKey("6AZSAhq4iJTwCfGEVssoa1p3GnBqGkbcQ1iDdP1U1pSb");
 
@@ -23,7 +24,7 @@ function assert(condition: boolean, testName: string) {
 
 async function main() {
   const connection = new anchor.web3.Connection("https://api.devnet.solana.com", "confirmed");
-  const walletPath = path.join(__dirname, "../../devnet-wallet.json");
+  const walletPath = path.resolve(process.cwd(), "../devnet-wallet.json");
   const walletKeypair = Keypair.fromSecretKey(
     Uint8Array.from(JSON.parse(fs.readFileSync(walletPath, "utf-8")))
   );

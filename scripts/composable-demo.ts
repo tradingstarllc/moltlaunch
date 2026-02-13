@@ -1,3 +1,4 @@
+
 /**
  * ╔══════════════════════════════════════════════════════════════════════════════╗
  * ║  COMPOSABLE FINANCE DEMO — Cross-Program CPI Integration                   ║
@@ -454,7 +455,7 @@ async function main() {
 
   // ─── Setup ────────────────────────────────────────────────────────────────
   const connection = new Connection("https://api.devnet.solana.com", "confirmed");
-  const walletPath = path.join(__dirname, "../../devnet-wallet.json");
+  const walletPath = path.resolve(process.cwd(), "../devnet-wallet.json");
   const walletKeypair = Keypair.fromSecretKey(
     Uint8Array.from(JSON.parse(fs.readFileSync(walletPath, "utf-8")))
   );
@@ -462,7 +463,7 @@ async function main() {
   const provider = new anchor.AnchorProvider(connection, wallet, { commitment: "confirmed" });
   anchor.setProvider(provider);
 
-  const idlPath = path.join(__dirname, "../target/idl/moltlaunch.json");
+  const idlPath = path.resolve(process.cwd(), "target/idl/moltlaunch.json");
   const idl = JSON.parse(fs.readFileSync(idlPath, "utf-8"));
   const program = new Program(idl, provider);
 
