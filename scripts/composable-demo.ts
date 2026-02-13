@@ -455,11 +455,37 @@ async function main() {
 
   // ─── Setup ────────────────────────────────────────────────────────────────
   const connection = new Connection("https://api.devnet.solana.com", "confirmed");
-  const walletPath = path.resolve(process.cwd(), "../devnet-wallet.json");
-  const walletKeypair = Keypair.fromSecretKey(
-    Uint8Array.from(JSON.parse(fs.readFileSync(walletPath, "utf-8")))
-  );
-  const wallet = new anchor.Wallet(walletKeypair);
+  
+  // Try to load local wallet, fall back to read-only mode with known agent
+  let walletKeypair: Keypair;
+  let readOnlyMode = false;
+  const walletPaths = [
+    path.resolve(process.cwd(), "../devnet-wallet.json"),
+    path.resolve(process.cwd(), "devnet-wallet.json"),
+    path.resolve(process.env.HOME || "~", ".config/solana/id.json"),
+  ];
+  
+  let loadedWallet = false;
+  for (const wp of walletPaths) {
+    try {
+      walletKeypair = Keypair.fromSecretKey(
+        Uint8Array.from(JSON.parse(fs.readFileSync(wp, "utf-8")))
+      );
+      loadedWallet = true;
+      console.log(`\n  Wallet loaded from: ${wp}`);
+      break;
+    } catch {}
+  }
+  
+  if (!loadedWallet) {
+    // Read-only mode: generate a dummy wallet for provider, read known agent PDA
+    console.log("\n  ⚠️  No wallet found — running in READ-ONLY mode");
+    console.log("  (To run with full features, place a devnet wallet at ../devnet-wallet.json)");
+    walletKeypair = Keypair.generate();
+    readOnlyMode = true;
+  }
+  
+  const wallet = new anchor.Wallet(walletKeypair!);
   const provider = new anchor.AnchorProvider(connection, wallet, { commitment: "confirmed" });
   anchor.setProvider(provider);
 
@@ -467,7 +493,12 @@ async function main() {
   const idl = JSON.parse(fs.readFileSync(idlPath, "utf-8"));
   const program = new Program(idl, provider);
 
-  console.log(`\n  Wallet: ${walletKeypair.publicKey.toBase58()}`);
+  // In read-only mode, use the known deployed agent; otherwise use wallet's agent
+  const agentWalletPubkey = readOnlyMode 
+    ? new PublicKey("3WAE2DGvGHH6ZnPQdEJnkTktpoBNr4ci6HeecVmisNw8")
+    : walletKeypair!.publicKey;
+    
+  console.log(`  Wallet: ${agentWalletPubkey.toBase58()}${readOnlyMode ? " (known agent, read-only)" : ""}`);
 
   // ═════════════════════════════════════════════════════════════════════════
   // STEP 1: Trust-Gated Agent Registration — Read On-Chain Identity
@@ -477,8 +508,8 @@ async function main() {
   console.log("\n  📡 Reading MoltLaunch AgentIdentity from devnet...\n");
 
   // Derive PDA deterministically
-  const [agentPda, agentBump] = deriveMoltLaunchAgentPDA(walletKeypair.publicKey);
-  console.log(`  PDA derivation: seeds = ["agent", ${walletKeypair.publicKey.toBase58().slice(0, 8)}...]`);
+  const [agentPda, agentBump] = deriveMoltLaunchAgentPDA(agentWalletPubkey);
+  console.log(`  PDA derivation: seeds = ["agent", ${agentWalletPubkey.toBase58().slice(0, 8)}...]`);
   console.log(`  Derived PDA:    ${agentPda.toBase58()}`);
   console.log(`  Known PDA:      ${KNOWN_AGENT_PDA.toBase58()}`);
   console.log(`  Match:          ${agentPda.toBase58() === KNOWN_AGENT_PDA.toBase58() ? "✅ Yes" : "❌ No"}`);
@@ -700,7 +731,7 @@ async function main() {
   console.log(`    ┌── Accounts ──────────────────────────────────────────────┐`);
   console.log(`    │  agreement:       ${agreementPda.toBase58()}`);
   console.log(`    │  proposer:        (AAP AgentIdentity PDA for proposer)`);
-  console.log(`    │  authority:       ${walletKeypair.publicKey.toBase58().slice(0, 20)}... (signer)`);
+  console.log(`    │  authority:       ${agentWalletPubkey.toBase58().slice(0, 20)}... (signer)`);
   console.log(`    │  escrow_vault:    (derived from agreement PDA)`);
   console.log(`    │  escrow_mint:     SOL (11111111...)`);
   console.log(`    │  system_program:  11111111111111111111111111111111`);
@@ -738,11 +769,11 @@ async function main() {
   console.log("  ╚═══════════════════════════════════════════╝\n");
 
   // Get actual wallet balance from devnet
-  const walletBalance = await connection.getBalance(walletKeypair.publicKey);
+  const walletBalance = await connection.getBalance(agentWalletPubkey);
   const walletBalanceSOL = walletBalance / 1e9;
 
   const blinkGuard = simulateBlinkGuard({
-    senderWallet: walletKeypair.publicKey,
+    senderWallet: agentWalletPubkey,
     escrowVault: agreementPda,
     escrowAmount: agreement.trustAdjustments.adjustedEscrow,
     senderPreBalance: walletBalanceSOL,
