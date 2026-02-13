@@ -493,12 +493,13 @@ async function main() {
   const idl = JSON.parse(fs.readFileSync(idlPath, "utf-8"));
   const program = new Program(idl, provider);
 
-  // In read-only mode, use the known deployed agent; otherwise use wallet's agent
-  const agentWalletPubkey = readOnlyMode 
-    ? new PublicKey("3WAE2DGvGHH6ZnPQdEJnkTktpoBNr4ci6HeecVmisNw8")
-    : walletKeypair!.publicKey;
+  // Always demo the known deployed agent — the demo reads existing on-chain state
+  // Your wallet is used for provider connection only, not for PDA derivation
+  const DEMO_AGENT_WALLET = new PublicKey("3WAE2DGvGHH6ZnPQdEJnkTktpoBNr4ci6HeecVmisNw8");
+  const agentWalletPubkey = DEMO_AGENT_WALLET;
     
-  console.log(`  Wallet: ${agentWalletPubkey.toBase58()}${readOnlyMode ? " (known agent, read-only)" : ""}`);
+  console.log(`  Your wallet: ${walletKeypair!.publicKey.toBase58()}${readOnlyMode ? " (generated, read-only)" : ""}`);
+  console.log(`  Demo agent:  ${agentWalletPubkey.toBase58()} (moltlaunch-agent on devnet)`);
 
   // ═════════════════════════════════════════════════════════════════════════
   // STEP 1: Trust-Gated Agent Registration — Read On-Chain Identity
