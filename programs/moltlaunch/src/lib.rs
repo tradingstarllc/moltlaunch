@@ -6,9 +6,10 @@ declare_id!("6AZSAhq4iJTwCfGEVssoa1p3GnBqGkbcQ1iDdP1U1pSb");
 // MoltLaunch V3 — Composable Signal Architecture
 //
 // 4 PDAs:  ProtocolConfig, Authority, AgentIdentity, Attestation
-// 9 Instructions: initialize, add_authority, remove_authority, register_agent,
-//   submit_attestation, revoke_attestation, flag_agent, unflag_agent,
-//   refresh_identity_signals
+// 12 Instructions:
+//   Admin:       initialize, add_authority, remove_authority, set_paused, transfer_admin
+//   Agent:       register_agent, flag_agent, unflag_agent, refresh_identity_signals
+//   Attestation: submit_attestation, revoke_attestation, close_attestation
 // =============================================================================
 
 #[program]
